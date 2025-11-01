@@ -1,0 +1,1379 @@
+{
+  "database_name": "EduShareDB",
+  "description": "Cấu trúc MongoDB cho nền tảng chia sẻ tài liệu và học tập trực tuyến EduShare",
+  "collections": [
+    {
+      "collection_name": "UserCollection",
+      "description": "Quản lý thông tin người dùng, giảng viên, học viên",
+      "schema": {
+        "user_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID duy nhất của người dùng"
+        },
+        "fullName": {
+          "type": "String",
+          "required": true,
+          "description": "Họ và tên đầy đủ"
+        },
+        "email": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "index": true,
+          "validation": "email",
+          "description": "Email đăng nhập"
+        },
+        "passWord": {
+          "type": "String",
+          "required": true,
+          "description": "Mật khẩu đã được hash (bcrypt)"
+        },
+        "role": {
+          "type": "String",
+          "enum": ["student", "instructor", "admin"],
+          "default": "student",
+          "index": true,
+          "description": "Vai trò: học viên, giảng viên, admin"
+        },
+        "phone": {
+          "type": "String",
+          "default": "",
+          "description": "Số điện thoại"
+        },
+        "avatar_url": {
+          "type": "String",
+          "default": "/img/default-avatar.png",
+          "description": "Đường dẫn ảnh đại diện"
+        },
+        "bio": {
+          "type": "String",
+          "maxLength": 500,
+          "default": "",
+          "description": "Tiểu sử ngắn"
+        },
+        "gender": {
+          "type": "String",
+          "enum": ["male", "female", "other", ""],
+          "default": "",
+          "description": "Giới tính"
+        },
+        "date_of_birth": {
+          "type": "Date",
+          "description": "Ngày sinh"
+        },
+        "address": {
+          "type": "String",
+          "default": "",
+          "description": "Địa chỉ"
+        },
+        "university": {
+          "type": "String",
+          "default": "",
+          "description": "Trường đại học"
+        },
+        "major": {
+          "type": "String",
+          "default": "",
+          "description": "Chuyên ngành học"
+        },
+        "uploaded_documents": {
+          "type": ["String"],
+          "default": [],
+          "description": "Mảng ID các tài liệu đã upload"
+        },
+        "enrolled_courses": {
+          "type": ["String"],
+          "default": [],
+          "description": "Mảng ID các khóa học đã đăng ký"
+        },
+        "saved_documents": {
+          "type": ["String"],
+          "default": [],
+          "description": "Mảng ID tài liệu đã lưu vào thư viện"
+        },
+        "following": {
+          "type": ["String"],
+          "default": [],
+          "description": "Mảng ID người dùng đang theo dõi"
+        },
+        "followers": {
+          "type": ["String"],
+          "default": [],
+          "description": "Mảng ID người đang theo dõi"
+        },
+        "contributions": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số lượng tài liệu đã chia sẻ"
+        },
+        "reputation_score": {
+          "type": "Number",
+          "default": 0,
+          "description": "Điểm uy tín (từ rating và tương tác)"
+        },
+        "is_verified": {
+          "type": "Boolean",
+          "default": false,
+          "description": "Đã xác thực tài khoản chưa"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "description": "Trạng thái hoạt động"
+        },
+        "last_login": {
+          "type": "Date",
+          "description": "Lần đăng nhập cuối"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": true,
+          "description": "Ngày tạo tài khoản"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật cuối"
+        }
+      },
+      "indexes": [
+        {"fields": {"email": 1}, "unique": true},
+        {"fields": {"user_id": 1}, "unique": true},
+        {"fields": {"role": 1}},
+        {"fields": {"created_at": -1}},
+        {"fields": {"reputation_score": -1}}
+      ],
+      "sample_document": {
+        "user_id": "user_001",
+        "fullName": "Nguyễn Văn A",
+        "email": "nguyenvana@example.com",
+        "passWord": "$2b$10$hashed_password",
+        "role": "instructor",
+        "phone": "0123456789",
+        "avatar_url": "/img/perfil.jpg",
+        "bio": "TS. Toán học tại Đại học Bách Khoa",
+        "gender": "male",
+        "university": "Đại học Bách Khoa Hà Nội",
+        "major": "Toán học",
+        "contributions": 45,
+        "reputation_score": 4.9,
+        "is_verified": true,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "DocumentsCollection",
+      "description": "Lưu trữ thông tin tài liệu học tập (PDF, PPT, Video, etc.)",
+      "schema": {
+        "document_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID duy nhất tài liệu"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "index": "text",
+          "description": "Tiêu đề tài liệu"
+        },
+        "description": {
+          "type": "String",
+          "required": true,
+          "maxLength": 2000,
+          "index": "text",
+          "description": "Mô tả chi tiết"
+        },
+        "subject": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "enum": ["Toán học", "Vật lý", "Hóa học", "Sinh học", "CNTT", "Lập trình", "Tiếng Anh", "Kinh tế", "Khác"],
+          "description": "Môn học"
+        },
+        "category": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "description": "Danh mục cụ thể (vd: Đại số, C#, React)"
+        },
+        "type": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "enum": ["PDF", "PPT", "DOC", "Video", "Audio", "Image", "Other"],
+          "description": "Loại file"
+        },
+        "level": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "enum": ["THPT", "Đại học", "Sau đại học", "Mọi cấp độ"],
+          "description": "Cấp độ học"
+        },
+        "author_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID người upload"
+        },
+        "file_url": {
+          "type": "String",
+          "required": true,
+          "description": "URL file trên cloud storage"
+        },
+        "thumbnail_url": {
+          "type": "String",
+          "required": true,
+          "description": "URL ảnh thumbnail"
+        },
+        "file_size": {
+          "type": "Number",
+          "required": true,
+          "description": "Kích thước file (bytes)"
+        },
+        "downloads": {
+          "type": "Number",
+          "default": 0,
+          "index": -1,
+          "description": "Số lượt tải về"
+        },
+        "views": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số lượt xem"
+        },
+        "rating": {
+          "type": "Number",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "description": "Đánh giá trung bình"
+        },
+        "rating_count": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số lượng đánh giá"
+        },
+        "tags": {
+          "type": ["String"],
+          "index": true,
+          "description": "Tags để tìm kiếm"
+        },
+        "license": {
+          "type": "String",
+          "enum": ["CC-BY", "CC-BY-NC", "CC-BY-SA", "Public Domain", "All Rights Reserved"],
+          "default": "CC-BY",
+          "description": "Giấy phép sử dụng"
+        },
+        "year": {
+          "type": "Number",
+          "description": "Năm phát hành/tạo"
+        },
+        "is_featured": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Tài liệu nổi bật"
+        },
+        "is_approved": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Đã duyệt nội dung"
+        },
+        "approved_by": {
+          "type": "String",
+          "ref": "UserCollection",
+          "description": "ID admin duyệt"
+        },
+        "approved_at": {
+          "type": "Date",
+          "description": "Ngày duyệt"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "index": true,
+          "description": "Trạng thái hoạt động"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày upload"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật cuối"
+        }
+      },
+      "indexes": [
+        {"fields": {"document_id": 1}, "unique": true},
+        {"fields": {"subject": 1, "type": 1}},
+        {"fields": {"author_id": 1}},
+        {"fields": {"downloads": -1}},
+        {"fields": {"created_at": -1}},
+        {"fields": {"rating": -1}},
+        {"fields": {"is_featured": 1}},
+        {"fields": {"is_approved": 1}},
+        {"fields": {"title": "text", "description": "text"}},
+        {"fields": {"tags": 1}}
+      ],
+      "sample_document": {
+        "document_id": "doc_001",
+        "title": "Slide Đại số tuyến tính",
+        "description": "Tài liệu slide bài giảng về Đại số tuyến tính, bao gồm ma trận, định thức, hệ phương trình...",
+        "subject": "Toán học",
+        "category": "Đại số",
+        "type": "PDF",
+        "level": "Đại học",
+        "author_id": "user_001",
+        "file_url": "https://storage.eduShare.com/docs/slide-dstt.pdf",
+        "thumbnail_url": "/img/articles/dstt.png",
+        "file_size": 5242880,
+        "downloads": 1240,
+        "views": 3560,
+        "rating": 4.8,
+        "rating_count": 245,
+        "tags": ["Toán", "Đại số", "Ma trận"],
+        "license": "CC-BY",
+        "year": 2024,
+        "is_featured": true,
+        "is_approved": true,
+        "approved_by": "admin_001",
+        "approved_at": "2024-01-15T00:00:00Z",
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "CoursesCollection",
+      "description": "Quản lý các khóa học trực tuyến",
+      "schema": {
+        "course_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID duy nhất khóa học"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "index": "text",
+          "description": "Tên khóa học"
+        },
+        "description": {
+          "type": "String",
+          "required": true,
+          "maxLength": 5000,
+          "index": "text",
+          "description": "Mô tả khóa học"
+        },
+        "instructor_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID giảng viên"
+        },
+        "subject": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "description": "Môn học"
+        },
+        "level": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "enum": ["Cơ bản", "Trung bình", "Nâng cao", "Chuyên sâu"],
+          "description": "Cấp độ khóa học"
+        },
+        "duration": {
+          "type": "String",
+          "required": true,
+          "description": "Thời lượng khóa học (vd: '4 tuần', '10 giờ')"
+        },
+        "thumbnail_url": {
+          "type": "String",
+          "required": true,
+          "description": "URL ảnh bìa"
+        },
+        "price": {
+          "type": "Number",
+          "default": 0,
+          "index": true,
+          "description": "Giá khóa học (0 = miễn phí)"
+        },
+        "lessons": {
+          "type": ["Object"],
+          "required": true,
+          "description": "Danh sách bài học",
+          "nested_schema": {
+            "lesson_id": "String",
+            "title": "String",
+            "description": "String",
+            "content_url": "String",
+            "duration": "Number",
+            "order": "Number",
+            "is_free": "Boolean",
+            "created_at": "Date"
+          }
+        },
+        "enrolled_count": {
+          "type": "Number",
+          "default": 0,
+          "index": -1,
+          "description": "Số học viên đã đăng ký"
+        },
+        "rating": {
+          "type": "Number",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "description": "Đánh giá trung bình"
+        },
+        "rating_count": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số lượng đánh giá"
+        },
+        "tags": {
+          "type": ["String"],
+          "index": true,
+          "description": "Tags"
+        },
+        "is_published": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Đã publish chưa"
+        },
+        "published_at": {
+          "type": "Date",
+          "description": "Ngày publish"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "index": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"course_id": 1}, "unique": true},
+        {"fields": {"instructor_id": 1}},
+        {"fields": {"subject": 1}},
+        {"fields": {"price": 1}},
+        {"fields": {"enrolled_count": -1}},
+        {"fields": {"rating": -1}},
+        {"fields": {"created_at": -1}},
+        {"fields": {"title": "text", "description": "text"}}
+      ],
+      "sample_document": {
+        "course_id": "course_001",
+        "title": "Lập trình Web với React và Node.js",
+        "description": "Khóa học từ cơ bản đến nâng cao về React, Node.js, MongoDB, hoàn thành dự án thực tế",
+        "instructor_id": "user_002",
+        "subject": "CNTT",
+        "level": "Trung bình",
+        "duration": "12 tuần",
+        "thumbnail_url": "/img/courses/react-node.png",
+        "price": 0,
+        "lessons": [
+          {
+            "lesson_id": "lesson_001",
+            "title": "Giới thiệu React",
+            "description": "Tổng quan về React và cách thiết lập môi trường",
+            "content_url": "https://video.eduShare.com/react-intro.mp4",
+            "duration": 1800,
+            "order": 1,
+            "is_free": true,
+            "created_at": "2024-01-01T00:00:00Z"
+          }
+        ],
+        "enrolled_count": 156,
+        "rating": 4.7,
+        "rating_count": 89,
+        "tags": ["React", "Node.js", "Full-stack"],
+        "is_published": true,
+        "published_at": "2024-01-15T00:00:00Z",
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "ForumThreadsCollection",
+      "description": "Chủ đề thảo luận trong diễn đàn",
+      "schema": {
+        "thread_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID chủ đề"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "index": "text",
+          "description": "Tiêu đề"
+        },
+        "content": {
+          "type": "String",
+          "required": true,
+          "maxLength": 10000,
+          "index": "text",
+          "description": "Nội dung"
+        },
+        "author_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID người tạo"
+        },
+        "category": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "enum": ["general", "programming", "mathematics", "language", "science", "study"],
+          "description": "Danh mục"
+        },
+        "tags": {
+          "type": ["String"],
+          "index": true,
+          "description": "Tags"
+        },
+        "views": {
+          "type": "Number",
+          "default": 0,
+          "description": "Lượt xem"
+        },
+        "reply_count": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số phản hồi"
+        },
+        "last_reply_at": {
+          "type": "Date",
+          "index": -1,
+          "description": "Thời gian phản hồi cuối"
+        },
+        "is_pinned": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Ghim chủ đề"
+        },
+        "is_locked": {
+          "type": "Boolean",
+          "default": false,
+          "description": "Đã khóa"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "index": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"thread_id": 1}, "unique": true},
+        {"fields": {"author_id": 1}},
+        {"fields": {"category": 1}},
+        {"fields": {"created_at": -1}},
+        {"fields": {"last_reply_at": -1}},
+        {"fields": {"views": -1}},
+        {"fields": {"title": "text", "content": "text"}}
+      ],
+      "sample_document": {
+        "thread_id": "thread_001",
+        "title": "Cách học Vue.js hiệu quả cho người mới?",
+        "content": "Mình mới bắt đầu học Vue.js, các bạn có lời khuyên gì không? Muốn tìm tài liệu và cách học hiệu quả...",
+        "author_id": "user_003",
+        "category": "programming",
+        "tags": ["Lập trình", "Vue.js"],
+        "views": 156,
+        "reply_count": 24,
+        "last_reply_at": "2024-03-15T10:30:00Z",
+        "is_pinned": false,
+        "is_locked": false,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "ForumRepliesCollection",
+      "description": "Phản hồi cho các chủ đề diễn đàn",
+      "schema": {
+        "reply_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID phản hồi"
+        },
+        "thread_id": {
+          "type": "String",
+          "required": true,
+          "ref": "ForumThreadsCollection",
+          "index": true,
+          "description": "ID chủ đề"
+        },
+        "author_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID người trả lời"
+        },
+        "content": {
+          "type": "String",
+          "required": true,
+          "maxLength": 5000,
+          "index": "text",
+          "description": "Nội dung"
+        },
+        "parent_reply_id": {
+          "type": "String",
+          "ref": "ForumRepliesCollection",
+          "description": "ID phản hồi cha (cho reply lồng nhau)"
+        },
+        "upvotes": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số upvote"
+        },
+        "downvotes": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số downvote"
+        },
+        "is_accepted_answer": {
+          "type": "Boolean",
+          "default": false,
+          "description": "Đã được chấp nhận là câu trả lời đúng"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"reply_id": 1}, "unique": true},
+        {"fields": {"thread_id": 1}},
+        {"fields": {"author_id": 1}},
+        {"fields": {"parent_reply_id": 1}},
+        {"fields": {"created_at": -1}}
+      ],
+      "sample_document": {
+        "reply_id": "reply_001",
+        "thread_id": "thread_001",
+        "author_id": "user_004",
+        "content": "Mình recommend bạn học theo cách này: 1. Học Vue.js từ docs chính thức 2. Làm bài tập thực hành...",
+        "parent_reply_id": null,
+        "upvotes": 12,
+        "downvotes": 1,
+        "is_accepted_answer": true,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "DocumentRatingsCollection",
+      "description": "Đánh giá và bình luận về tài liệu",
+      "schema": {
+        "rating_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID đánh giá"
+        },
+        "document_id": {
+          "type": "String",
+          "required": true,
+          "ref": "DocumentsCollection",
+          "index": true,
+          "description": "ID tài liệu"
+        },
+        "user_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID người đánh giá"
+        },
+        "rating": {
+          "type": "Number",
+          "required": true,
+          "min": 1,
+          "max": 5,
+          "index": true,
+          "description": "Điểm đánh giá (1-5 sao)"
+        },
+        "comment": {
+          "type": "String",
+          "maxLength": 1000,
+          "index": "text",
+          "description": "Nhận xét"
+        },
+        "is_verified_purchase": {
+          "type": "Boolean",
+          "default": false,
+          "description": "Đã tải về file chưa"
+        },
+        "is_helpful": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số người báo hữu ích"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"rating_id": 1}, "unique": true},
+        {"fields": {"document_id": 1, "user_id": 1}, "unique": true},
+        {"fields": {"document_id": 1}},
+        {"fields": {"user_id": 1}},
+        {"fields": {"rating": 1}},
+        {"fields": {"created_at": -1}}
+      ],
+      "sample_document": {
+        "rating_id": "rating_001",
+        "document_id": "doc_001",
+        "user_id": "user_005",
+        "rating": 5,
+        "comment": "Tài liệu rất chi tiết và dễ hiểu, cảm ơn tác giả!",
+        "is_verified_purchase": true,
+        "is_helpful": 45,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "CourseEnrollmentsCollection",
+      "description": "Đăng ký khóa học của học viên",
+      "schema": {
+        "enrollment_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID đăng ký"
+        },
+        "course_id": {
+          "type": "String",
+          "required": true,
+          "ref": "CoursesCollection",
+          "index": true,
+          "description": "ID khóa học"
+        },
+        "user_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID học viên"
+        },
+        "enrolled_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày đăng ký"
+        },
+        "completed_lessons": {
+          "type": ["String"],
+          "default": [],
+          "description": "Mảng ID bài học đã hoàn thành"
+        },
+        "progress_percentage": {
+          "type": "Number",
+          "default": 0,
+          "min": 0,
+          "max": 100,
+          "description": "Tiến độ hoàn thành (%)"
+        },
+        "last_accessed_at": {
+          "type": "Date",
+          "description": "Lần truy cập cuối"
+        },
+        "rating": {
+          "type": "Number",
+          "min": 0,
+          "max": 5,
+          "description": "Đánh giá khóa học"
+        },
+        "review": {
+          "type": "String",
+          "maxLength": 1000,
+          "description": "Review khóa học"
+        },
+        "certificate_issued": {
+          "type": "Boolean",
+          "default": false,
+          "description": "Đã cấp chứng chỉ chưa"
+        },
+        "certificate_url": {
+          "type": "String",
+          "description": "URL chứng chỉ"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "description": "Trạng thái"
+        }
+      },
+      "indexes": [
+        {"fields": {"enrollment_id": 1}, "unique": true},
+        {"fields": {"course_id": 1, "user_id": 1}, "unique": true},
+        {"fields": {"course_id": 1}},
+        {"fields": {"user_id": 1}},
+        {"fields": {"enrolled_at": -1}}
+      ],
+      "sample_document": {
+        "enrollment_id": "enroll_001",
+        "course_id": "course_001",
+        "user_id": "user_006",
+        "enrolled_at": "2024-02-01T00:00:00Z",
+        "completed_lessons": ["lesson_001", "lesson_002"],
+        "progress_percentage": 25,
+        "last_accessed_at": "2024-03-10T15:30:00Z",
+        "rating": null,
+        "review": null,
+        "certificate_issued": false,
+        "certificate_url": null,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "CollectionsCollection",
+      "description": "Bộ sưu tập tài liệu theo chủ đề",
+      "schema": {
+        "collection_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID bộ sưu tập"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "index": "text",
+          "description": "Tên bộ sưu tập"
+        },
+        "description": {
+          "type": "String",
+          "required": true,
+          "maxLength": 1000,
+          "description": "Mô tả"
+        },
+        "cover_url": {
+          "type": "String",
+          "required": true,
+          "description": "URL ảnh bìa"
+        },
+        "curator_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID người quản lý"
+        },
+        "document_ids": {
+          "type": ["String"],
+          "default": [],
+          "ref": "DocumentsCollection",
+          "description": "Danh sách tài liệu"
+        },
+        "follower_count": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số người theo dõi"
+        },
+        "is_featured": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Nổi bật"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"collection_id": 1}, "unique": true},
+        {"fields": {"curator_id": 1}},
+        {"fields": {"created_at": -1}},
+        {"fields": {"is_featured": 1}}
+      ],
+      "sample_document": {
+        "collection_id": "coll_001",
+        "title": "Toán & Lý",
+        "description": "Hơn 500 tài liệu về Toán học và Vật lý",
+        "cover_url": "/img/articles/math-phys.png",
+        "curator_id": "admin_001",
+        "document_ids": ["doc_001", "doc_003"],
+        "follower_count": 452,
+        "is_featured": true,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "NotificationsCollection",
+      "description": "Thông báo cho người dùng",
+      "schema": {
+        "notification_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID thông báo"
+        },
+        "user_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID người nhận"
+        },
+        "type": {
+          "type": "String",
+          "required": true,
+          "enum": ["new_comment", "new_follower", "new_reply", "document_approved", "course_update", "system"],
+          "description": "Loại thông báo"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "description": "Tiêu đề"
+        },
+        "message": {
+          "type": "String",
+          "required": true,
+          "description": "Nội dung"
+        },
+        "related_id": {
+          "type": "String",
+          "description": "ID liên quan (tài liệu, khóa học, v.v.)"
+        },
+        "is_read": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Đã đọc chưa"
+        },
+        "read_at": {
+          "type": "Date",
+          "description": "Ngày đọc"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        }
+      },
+      "indexes": [
+        {"fields": {"notification_id": 1}, "unique": true},
+        {"fields": {"user_id": 1, "is_read": 1}},
+        {"fields": {"created_at": -1}}
+      ],
+      "sample_document": {
+        "notification_id": "notif_001",
+        "user_id": "user_001",
+        "type": "new_comment",
+        "title": "Có bình luận mới",
+        "message": "Nguyễn Văn B đã bình luận về tài liệu của bạn",
+        "related_id": "doc_001",
+        "is_read": false,
+        "created_at": "2024-03-15T10:00:00Z"
+      }
+    },
+    {
+      "collection_name": "BlogPostsCollection",
+      "description": "Bài viết blog về học tập và chia sẻ",
+      "schema": {
+        "post_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID bài viết"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "index": "text",
+          "description": "Tiêu đề"
+        },
+        "slug": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "URL slug"
+        },
+        "content": {
+          "type": "String",
+          "required": true,
+          "description": "Nội dung bài viết (HTML)"
+        },
+        "excerpt": {
+          "type": "String",
+          "maxLength": 500,
+          "description": "Tóm tắt"
+        },
+        "author_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID tác giả"
+        },
+        "featured_image_url": {
+          "type": "String",
+          "required": true,
+          "description": "URL ảnh đại diện"
+        },
+        "category": {
+          "type": "String",
+          "required": true,
+          "index": true,
+          "enum": ["tips", "news", "tutorial", "review", "case_study"],
+          "description": "Danh mục"
+        },
+        "tags": {
+          "type": ["String"],
+          "index": true,
+          "description": "Tags"
+        },
+        "views": {
+          "type": "Number",
+          "default": 0,
+          "description": "Lượt xem"
+        },
+        "likes": {
+          "type": "Number",
+          "default": 0,
+          "description": "Lượt like"
+        },
+        "comment_count": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số bình luận"
+        },
+        "is_published": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Đã publish chưa"
+        },
+        "published_at": {
+          "type": "Date",
+          "index": -1,
+          "description": "Ngày publish"
+        },
+        "is_featured": {
+          "type": "Boolean",
+          "default": false,
+          "index": true,
+          "description": "Nổi bật"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "index": -1,
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"post_id": 1}, "unique": true},
+        {"fields": {"slug": 1}, "unique": true},
+        {"fields": {"author_id": 1}},
+        {"fields": {"category": 1}},
+        {"fields": {"published_at": -1}},
+        {"fields": {"views": -1}},
+        {"fields": {"title": "text", "content": "text"}},
+        {"fields": {"is_featured": 1}}
+      ],
+      "sample_document": {
+        "post_id": "post_001",
+        "title": "5 Phương pháp học lập trình hiệu quả cho người mới",
+        "slug": "5-phuong-phap-hoc-lap-trinh-hieu-qua",
+        "content": "<p>Lập trình là kỹ năng cần thiết trong thời đại số...</p>",
+        "excerpt": "Bài viết chia sẻ 5 phương pháp học lập trình hiệu quả dành cho người mới bắt đầu...",
+        "author_id": "user_002",
+        "featured_image_url": "/img/blog/programming-tips.jpg",
+        "category": "tips",
+        "tags": ["Lập trình", "Học tập", "Tips"],
+        "views": 1250,
+        "likes": 89,
+        "comment_count": 15,
+        "is_published": true,
+        "published_at": "2024-03-01T08:00:00Z",
+        "is_featured": true,
+        "is_active": true
+      }
+    },
+    {
+      "collection_name": "ClassSessionsCollection",
+      "description": "Quản lý lớp học trực tuyến",
+      "schema": {
+        "session_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID buổi học"
+        },
+        "class_id": {
+          "type": "String",
+          "required": true,
+          "ref": "ClassesCollection",
+          "index": true,
+          "description": "ID lớp học"
+        },
+        "title": {
+          "type": "String",
+          "required": true,
+          "description": "Tiêu đề buổi học"
+        },
+        "description": {
+          "type": "String",
+          "description": "Mô tả"
+        },
+        "instructor_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID giảng viên"
+        },
+        "scheduled_start": {
+          "type": "Date",
+          "required": true,
+          "index": true,
+          "description": "Thời gian bắt đầu dự kiến"
+        },
+        "scheduled_end": {
+          "type": "Date",
+          "required": true,
+          "description": "Thời gian kết thúc dự kiến"
+        },
+        "actual_start": {
+          "type": "Date",
+          "description": "Thời gian bắt đầu thực tế"
+        },
+        "actual_end": {
+          "type": "Date",
+          "description": "Thời gian kết thúc thực tế"
+        },
+        "meeting_url": {
+          "type": "String",
+          "description": "URL phòng học trực tuyến"
+        },
+        "recording_url": {
+          "type": "String",
+          "description": "URL video recording"
+        },
+        "status": {
+          "type": "String",
+          "enum": ["scheduled", "in_progress", "completed", "cancelled"],
+          "default": "scheduled",
+          "index": true,
+          "description": "Trạng thái"
+        },
+        "attendance_count": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số học viên tham gia"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày tạo"
+        },
+        "updated_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày cập nhật"
+        }
+      },
+      "indexes": [
+        {"fields": {"session_id": 1}, "unique": true},
+        {"fields": {"class_id": 1}},
+        {"fields": {"instructor_id": 1}},
+        {"fields": {"scheduled_start": 1}},
+        {"fields": {"status": 1}}
+      ]
+    },
+    {
+      "collection_name": "ClassesCollection",
+      "description": "Quản lý lớp học (class groups)",
+      "schema": {
+        "class_id": {
+          "type": "String",
+          "required": true,
+          "unique": true,
+          "description": "ID lớp"
+        },
+        "name": {
+          "type": "String",
+          "required": true,
+          "description": "Tên lớp"
+        },
+        "description": {
+          "type": "String",
+          "description": "Mô tả"
+        },
+        "instructor_id": {
+          "type": "String",
+          "required": true,
+          "ref": "UserCollection",
+          "index": true,
+          "description": "ID giảng viên"
+        },
+        "max_students": {
+          "type": "Number",
+          "default": 50,
+          "description": "Số học viên tối đa"
+        },
+        "current_students": {
+          "type": "Number",
+          "default": 0,
+          "description": "Số học viên hiện tại"
+        },
+        "start_date": {
+          "type": "Date",
+          "required": true,
+          "description": "Ngày bắt đầu"
+        },
+        "end_date": {
+          "type": "Date",
+          "required": true,
+          "description": "Ngày kết thúc"
+        },
+        "schedule": {
+          "type": "String",
+          "description": "Lịch học (vd: 'Thứ 2,4,6 19:00-21:00')"
+        },
+        "is_active": {
+          "type": "Boolean",
+          "default": true,
+          "index": true,
+          "description": "Trạng thái"
+        },
+        "created_at": {
+          "type": "Date",
+          "default": "Date.now",
+          "description": "Ngày tạo"
+        }
+      },
+      "indexes": [
+        {"fields": {"class_id": 1}, "unique": true},
+        {"fields": {"instructor_id": 1}},
+        {"fields": {"is_active": 1}}
+      ]
+    }
+  ],
+  "summary": {
+    "total_collections": 12,
+    "core_collections": [
+      "UserCollection",
+      "DocumentsCollection",
+      "CoursesCollection",
+      "ForumThreadsCollection",
+      "ForumRepliesCollection"
+    ],
+    "supporting_collections": [
+      "DocumentRatingsCollection",
+      "CourseEnrollmentsCollection",
+      "CollectionsCollection",
+      "NotificationsCollection",
+      "BlogPostsCollection",
+      "ClassSessionsCollection",
+      "ClassesCollection"
+    ]
+  },
+  "mongodb_connection_info": {
+    "host": "localhost",
+    "port": 27017,
+    "database": "EduShareDB",
+    "connection_string": "mongodb://localhost:27017/EduShareDB"
+  },
+  "notes": [
+    "Tất cả collections đều có trường created_at và updated_at tự động",
+    "Sử dụng MongoDB ObjectId nhưng có thêm custom ID string để dễ tìm kiếm",
+    "Các trường index 'text' sử dụng MongoDB Text Index để full-text search",
+    "Reference fields (ref) là ObjectId references, không phải populate tự động",
+    "Tất cả trường required đều có validation ở application level",
+    "Sử dụng Compound Indexes cho các truy vấn thường xuyên"
+  ]
+}
+

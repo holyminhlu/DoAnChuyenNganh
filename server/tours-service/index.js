@@ -17,8 +17,8 @@ app.use(cors())
 app.use(express.json())
 
 // Kết nối tới MongoDB
-mongoose.connect('mongodb+srv://nguyenhuuluan19092004zz:DtZp6M56ZYgYqprV@clustercheaptrip.fct1xpg.mongodb.net/ToursCheapTripDB')
-    .then(() => console.log('Kết nối tới ToursCheapTripDB thành công!'))
+mongoose.connect('mongodb+srv://holyminhludauden_db_user:<db_password>@openlearnfoundation.fniy67o.mongodb.net/EduShareDB')
+    .then(() => console.log('Kết nối tới EduShareDB thành công!'))
     .catch(err => console.error('Lỗi kết nối MongoDB:', err))
 
 // Sử dụng routes
