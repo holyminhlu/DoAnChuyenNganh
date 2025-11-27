@@ -718,6 +718,269 @@ exports.getEnrollment = async (req, res) => {
 }
 
 /**
+ * Update course progress
+ * PUT /courses/:id/progress
+ */
+exports.updateProgress = async (req, res) => {
+    const startTime = Date.now()
+    
+    // Set response timeout to prevent hanging
+    res.setTimeout(25000, () => {
+        if (!res.headersSent) {
+            console.error('⏱️ Response timeout after 25s')
+            try {
+                res.status(504).json({
+                    success: false,
+                    message: 'Request timeout - server took too long to respond'
+                })
+            } catch (e) {
+                console.error('Failed to send timeout response:', e.message)
+            }
+        }
+    })
+    
+    // Ensure response is sent even if client disconnects
+    req.on('aborted', () => {
+        console.warn('⚠️ Client aborted request')
+    })
+    
+    req.on('close', () => {
+        if (!res.headersSent) {
+            console.warn('⚠️ Client closed connection before response')
+        }
+    })
+    
+    try {
+        console.log('\n📊 ========== UPDATE PROGRESS ==========')
+        console.log('Time:', new Date().toISOString())
+        console.log('Request received at controller')
+        console.log('Request ID:', req.headers['x-request-id'] || 'N/A')
+        
+        // Check MongoDB connection
+        const mongoose = require('mongoose')
+        if (mongoose.connection.readyState !== 1) {
+            console.error('❌ MongoDB not connected. State:', mongoose.connection.readyState)
+            return res.status(503).json({
+                success: false,
+                message: 'Database connection not available. Please try again.'
+            })
+        }
+        
+        const { id } = req.params
+        const { user_id, lesson_id, module_id } = req.body
+
+        console.log('Course ID:', id)
+        console.log('User ID:', user_id)
+        console.log('Lesson ID:', lesson_id)
+        console.log('Module ID:', module_id)
+        console.log('Request body:', JSON.stringify(req.body))
+
+        // Validation
+        if (!user_id || !lesson_id) {
+            console.log('❌ Validation failed: missing user_id or lesson_id')
+            if (!res.headersSent) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Thiếu user_id hoặc lesson_id'
+                })
+            }
+            return
+        }
+
+        console.log('🔍 Finding course...')
+        const courseFindStart = Date.now()
+        // Find course with MongoDB timeout
+        let course
+        try {
+            course = await Course.findOne({
+                $or: [
+                    { _id: id },
+                    { course_id: id }
+                ]
+            }).lean().maxTimeMS(5000) // 5s timeout for query
+        } catch (queryError) {
+            console.error('❌ Course query error:', queryError.message)
+            if (!res.headersSent) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Lỗi khi tìm khóa học. Vui lòng thử lại.'
+                })
+            }
+            return
+        }
+        
+        const courseFindTime = Date.now() - courseFindStart
+        console.log('Course found:', course ? 'Yes' : 'No', `(${courseFindTime}ms)`)
+
+        if (!course) {
+            if (!res.headersSent) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy khóa học'
+                })
+            }
+            return
+        }
+
+        console.log('🔍 Finding enrollment...')
+        const enrollmentFindStart = Date.now()
+        // Find or create enrollment with MongoDB timeout
+        let enrollment
+        try {
+            enrollment = await Enrollment.findOne({
+                user_id: user_id,
+                course_id: course.course_id
+            }).maxTimeMS(5000) // 5s timeout for query
+        } catch (queryError) {
+            console.error('❌ Enrollment query error:', queryError.message)
+            if (!res.headersSent) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Lỗi khi tìm enrollment. Vui lòng thử lại.'
+                })
+            }
+            return
+        }
+        
+        const enrollmentFindTime = Date.now() - enrollmentFindStart
+        console.log('Enrollment found:', enrollment ? 'Yes' : 'No', `(${enrollmentFindTime}ms)`)
+
+        if (!enrollment) {
+            console.log('📝 Creating new enrollment...')
+            // Create enrollment if doesn't exist
+            enrollment = new Enrollment({
+                user_id: user_id,
+                course_id: course.course_id,
+                progress: {
+                    completedLessons: [],
+                    completionPercentage: 0
+                },
+                status: 'active'
+            })
+        }
+
+        // Check if lesson already completed
+        const existingLesson = enrollment.progress.completedLessons.find(
+            l => l.lesson_id === lesson_id
+        )
+
+        if (!existingLesson) {
+            // Add lesson to completed list
+            enrollment.progress.completedLessons.push({
+                lesson_id: lesson_id,
+                completedAt: new Date()
+            })
+        }
+
+        // Update last accessed lesson
+        if (module_id) {
+            enrollment.progress.lastAccessedLesson = {
+                lesson_id: lesson_id,
+                module_id: module_id
+            }
+        }
+
+        // Calculate total lessons in course
+        let totalLessons = 0
+        if (course.modules && Array.isArray(course.modules)) {
+            course.modules.forEach(module => {
+                if (module.lessons && Array.isArray(module.lessons)) {
+                    totalLessons += module.lessons.length
+                }
+            })
+        }
+
+        // Calculate completion percentage
+        const completedCount = enrollment.progress.completedLessons.length
+        enrollment.progress.completionPercentage = totalLessons > 0
+            ? Math.round((completedCount / totalLessons) * 100)
+            : 0
+
+        // Update status to completed if 100%
+        if (enrollment.progress.completionPercentage >= 100 && enrollment.status === 'active') {
+            enrollment.status = 'completed'
+        }
+
+        console.log('💾 Saving enrollment to database...')
+        console.log('Enrollment data:', {
+            enrollment_id: enrollment.enrollment_id,
+            user_id: enrollment.user_id,
+            course_id: enrollment.course_id,
+            completedLessons: enrollment.progress.completedLessons.length,
+            completionPercentage: enrollment.progress.completionPercentage
+        })
+        
+        const saveStartTime = Date.now()
+        
+        // Save to MongoDB database
+        // Note: save() doesn't support maxTimeMS directly, but connection-level timeout will apply
+        try {
+            await enrollment.save()
+        } catch (saveError) {
+            console.error('❌ Save error:', saveError.message)
+            console.error('Save error stack:', saveError.stack)
+            if (!res.headersSent) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Lỗi khi lưu tiến độ. Vui lòng thử lại.'
+                })
+            }
+            return
+        }
+        
+        const saveTime = Date.now() - saveStartTime
+        console.log(`✅ Enrollment saved to database in ${saveTime}ms`)
+        
+        const totalTime = Date.now() - startTime
+        console.log(`✅ Progress updated: ${enrollment.progress.completionPercentage}%`)
+        console.log(`Total time: ${totalTime}ms`)
+        console.log('=========================================\n')
+
+        // Send response immediately after saving
+        if (!res.headersSent && !res.writableEnded) {
+            const responseData = {
+                success: true,
+                message: 'Cập nhật tiến độ thành công',
+                data: {
+                    enrollment_id: enrollment.enrollment_id,
+                    progress: enrollment.progress,
+                    status: enrollment.status
+                }
+            }
+            
+            // Send response - res.json() automatically ends the response
+            res.json(responseData)
+            console.log('✅ Response sent successfully')
+        } else {
+            console.warn('⚠️ Response already sent or connection closed')
+        }
+    } catch (error) {
+        const elapsed = Date.now() - startTime
+        console.error('❌ Update progress error:', error)
+        console.error('Error after:', elapsed, 'ms')
+        console.error('Error stack:', error.stack)
+        console.error('Error name:', error.name)
+        console.error('Error code:', error.code)
+        
+        // Don't send response if connection is closed or already sent
+        if (error.code === 'ECONNABORTED' || error.type === 'request.aborted') {
+            console.log('⚠️ Request was aborted, skipping error response')
+            return
+        }
+        
+        if (!res.headersSent && !res.writableEnded) {
+            res.status(500).json({
+                success: false,
+                message: 'Đã có lỗi xảy ra khi cập nhật tiến độ.',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            })
+        } else {
+            console.warn('⚠️ Cannot send error response - headers already sent or connection closed')
+        }
+    }
+}
+
+/**
  * Create new course
  * POST /courses
  */

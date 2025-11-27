@@ -16,19 +16,48 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
-// Parse JSON body conditionally - skip for courses enroll endpoint to avoid stream conflicts
+// Parse JSON body conditionally - skip for streaming endpoints to avoid conflicts
 app.use((req, res, next) => {
-  // Skip body parsing for courses enroll to let proxy handle raw stream
-  // Check both originalUrl and path to catch the route
-  const isEnrollRoute = (req.originalUrl.includes('/courses') && req.originalUrl.includes('/enroll')) ||
-                        (req.path.includes('/courses') && req.path.includes('/enroll'));
-  
-  if (isEnrollRoute && req.method === 'POST') {
-    console.log('⏭️ Skipping body parsing for courses enroll - proxy will handle');
+  const originalUrl = req.originalUrl || '';
+  const currentPath = req.path || '';
+  const isCoursesRoute = originalUrl.includes('/courses') || currentPath.includes('/courses');
+  const isEnrollRoute = isCoursesRoute &&
+    (originalUrl.includes('/enroll') || currentPath.includes('/enroll'));
+  const isProgressRoute = isCoursesRoute &&
+    (originalUrl.includes('/progress') || currentPath.includes('/progress'));
+
+  const shouldSkipJsonParsing =
+    (isEnrollRoute && req.method === 'POST') ||
+    (isProgressRoute && req.method === 'PUT');
+
+  if (shouldSkipJsonParsing) {
+    const reason = isEnrollRoute ? 'enroll' : 'progress';
+    console.log(`⏭️ Skipping body parsing for courses ${reason} - proxy will forward raw stream`);
     return next();
   }
-  // Parse JSON for other routes
-  express.json({ limit: '50mb' })(req, res, next);
+  
+  // Parse JSON for all other routes
+  const jsonParser = express.json({ 
+    limit: '50mb',
+    verify: (req, res, buf, encoding) => {
+      // Store raw body for debugging if needed
+      req.rawBody = buf;
+    }
+  });
+  
+  jsonParser(req, res, (err) => {
+    if (err) {
+      console.error('❌ JSON parsing error:', err.message);
+      console.error('   Path:', req.originalUrl);
+      console.error('   Content-Type:', req.headers['content-type']);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid JSON in request body',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
+    }
+    next();
+  });
 });
 
 // Parse URL-encoded form data

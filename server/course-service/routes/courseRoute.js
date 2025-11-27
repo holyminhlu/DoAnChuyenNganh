@@ -4,7 +4,7 @@ const router = express.Router();
 console.log('\n📋 Loading course routes...');
 
 // Import controllers
-let getAllCourses, searchCourses, getCourseById, enrollCourse, getEnrollment, getMyEnrollments, createCourse, uploadCourseFilesMiddleware;
+let getAllCourses, searchCourses, getCourseById, enrollCourse, getEnrollment, getMyEnrollments, createCourse, uploadCourseFilesMiddleware, updateProgress;
 
 try {
     const controllers = require('../controllers/courseController');
@@ -16,6 +16,7 @@ try {
     getMyEnrollments = controllers.getMyEnrollments;
     createCourse = controllers.createCourse;
     uploadCourseFilesMiddleware = controllers.uploadCourseFilesMiddleware;
+    updateProgress = controllers.updateProgress;
     console.log('✅ Controllers loaded successfully');
 } catch (error) {
     console.error('❌ Error loading controllers:', error);
@@ -25,8 +26,28 @@ try {
 // Middleware để log route access
 const logRoute = (routeName) => {
     return (req, res, next) => {
+        const routeStartTime = Date.now()
         console.log(`\n🎯 Route hit: ${routeName}`);
+        console.log(`Time: ${new Date().toISOString()}`);
         console.log(`Method: ${req.method}, Path: ${req.path}`);
+        console.log(`Params:`, req.params);
+        console.log(`Body received:`, req.body ? JSON.stringify(req.body) : 'No body');
+        console.log(`Body type:`, typeof req.body);
+        
+        // Handle request abort
+        req.on('aborted', () => {
+            const elapsed = Date.now() - routeStartTime
+            console.log(`⚠️ Request aborted for ${routeName} after ${elapsed}ms`);
+        });
+        
+        req.on('close', () => {
+            if (!res.headersSent) {
+                const elapsed = Date.now() - routeStartTime
+                console.log(`⚠️ Request closed before response for ${routeName} after ${elapsed}ms`);
+            }
+        });
+        
+        console.log(`✅ Calling next() for ${routeName}`);
         next();
     };
 };
@@ -34,12 +55,39 @@ const logRoute = (routeName) => {
 // Wrapper để catch errors
 const asyncHandler = (fn, routeName) => {
     return async (req, res, next) => {
+        const startTime = Date.now();
         try {
             console.log(`\n🎯 Executing: ${routeName}`);
+            console.log(`Request body:`, req.body ? JSON.stringify(req.body) : 'No body');
+            
+            // Set timeout for response
+            res.setTimeout(20000, () => {
+                if (!res.headersSent) {
+                    console.error(`⏱️ Response timeout for ${routeName} after 20s`);
+                    res.status(504).json({
+                        success: false,
+                        message: 'Request timeout'
+                    });
+                }
+            });
+            
             await fn(req, res, next);
+            
+            const elapsed = Date.now() - startTime;
+            console.log(`✅ ${routeName} completed in ${elapsed}ms`);
         } catch (error) {
-            console.error(`\n❌ Error in ${routeName}:`, error);
-            if (!res.headersSent) {
+            const elapsed = Date.now() - startTime;
+            console.error(`\n❌ Error in ${routeName} after ${elapsed}ms:`, error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            
+            // Don't send response if connection is closed or already sent
+            if (error.code === 'ECONNABORTED' || error.type === 'request.aborted') {
+                console.log('⚠️ Request was aborted, skipping error response');
+                return;
+            }
+            
+            if (!res.headersSent && !res.writableEnded) {
                 res.status(500).json({
                     success: false,
                     message: `Lỗi xử lý request tại ${routeName}`,
@@ -58,6 +106,7 @@ router.get('/', logRoute('GET /courses'), asyncHandler(getAllCourses, 'GET /cour
 // Enrollment routes must come before /:id route
 router.post('/:id/enroll', logRoute('POST /courses/:id/enroll'), asyncHandler(enrollCourse, 'POST /courses/:id/enroll'));
 router.get('/:id/enrollment', logRoute('GET /courses/:id/enrollment'), asyncHandler(getEnrollment, 'GET /courses/:id/enrollment'));
+router.put('/:id/progress', logRoute('PUT /courses/:id/progress'), asyncHandler(updateProgress, 'PUT /courses/:id/progress'));
 // :id route must be last to avoid matching /search, /enroll, etc.
 router.get('/:id', logRoute('GET /courses/:id'), asyncHandler(getCourseById, 'GET /courses/:id'));
 

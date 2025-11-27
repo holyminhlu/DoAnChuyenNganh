@@ -15,12 +15,30 @@ router.use((req, res, next) => {
   next();
 });
 
-router.use('/auth', authProxy);         // ✅ Dùng biến đã require
+router.use('/auth', (req, res, next) => {
+  console.log(`🔗 Routing to authProxy: ${req.method} ${req.path}`);
+  next();
+}, authProxy);
+
 router.use('/tours', toursProxy);
+
 router.use('/bookings', bookingProxy); // Đã mount ở index.js, không cần ở đây
+
 router.use('/discounts', discountsProxy);
+
 router.use('/rating', ratingProxy);
-router.use('/documents', documentsProxy); // ✅ Documents service proxy
-router.use('/courses', coursesProxy); // ✅ Courses service proxy
+
+router.use('/documents', (req, res, next) => {
+  console.log(`🔗 Routing to documentsProxy: ${req.method} ${req.path}`);
+  next();
+}, documentsProxy);
+
+router.use('/courses', (req, res, next) => {
+  console.log(`🔗 Routing to coursesProxy: ${req.method} ${req.path}`);
+  console.log(`   Original URL: ${req.originalUrl}`);
+  console.log(`   Request path: ${req.path}`);
+  console.log(`   Request URL: ${req.url}`);
+  next();
+}, coursesProxy);
 
 module.exports = router;
