@@ -95,8 +95,64 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`API Gateway chạy tại http://localhost:${PORT}`);
-  console.log(`Test endpoint: http://localhost:${PORT}/test`);
-  console.log(`Courses endpoint: http://localhost:${PORT}/api/courses`);
+// Global error handler - Bắt tất cả lỗi không được handle
+app.use((err, req, res, next) => {
+  console.error('\n💥 ========== UNHANDLED ERROR ==========');
+  console.error('Error:', err);
+  console.error('Request:', req.method, req.path);
+  console.error('Stack:', err.stack);
+  console.error('======================================\n');
+  
+  res.status(500).json({
+    success: false,
+    message: 'Đã có lỗi xảy ra trên server',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('\n💥 ========== UNCAUGHT EXCEPTION ==========');
+  console.error('Error:', err);
+  console.error('Stack:', err.stack);
+  console.error('==========================================\n');
+  // Don't exit - keep server running
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('\n💥 ========== UNHANDLED REJECTION ==========');
+  console.error('Reason:', reason);
+  console.error('Promise:', promise);
+  console.error('============================================\n');
+  // Don't exit - keep server running
+});
+
+// Start server
+try {
+  const server = app.listen(PORT, () => {
+    console.log('\n🚀 =======================================');
+    console.log(`✅ API Gateway đang lắng nghe tại http://localhost:${PORT}`);
+    console.log(`✅ Test endpoint: http://localhost:${PORT}/test`);
+    console.log(`✅ Courses endpoint: http://localhost:${PORT}/api/courses`);
+    console.log(`✅ Documents endpoint: http://localhost:${PORT}/api/documents`);
+    console.log(`✅ Auth endpoint: http://localhost:${PORT}/api/auth`);
+    console.log(`✅ Forum endpoint: http://localhost:${PORT}/api/forum`);
+    console.log('======================================\n');
+    console.log('💡 Nhấn Ctrl+C để dừng server\n');
+  });
+
+  // Handle server errors
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ Port ${PORT} đã được sử dụng. Vui lòng chọn port khác hoặc dừng service đang chạy.\n`);
+    } else {
+      console.error('\n❌ Server error:', err);
+    }
+    process.exit(1);
+  });
+} catch (err) {
+  console.error('\n❌ Lỗi khởi động server:', err);
+  console.error('Stack:', err.stack);
+  process.exit(1);
+}

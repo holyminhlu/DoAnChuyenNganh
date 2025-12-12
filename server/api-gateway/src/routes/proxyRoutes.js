@@ -8,6 +8,7 @@ const discountsProxy = require('./discountsProxy');
 const ratingProxy = require('./ratingProxy');
 const documentsProxy = require('./documentsProxy');
 const coursesProxy = require('./coursesProxy');
+const forumProxy = require('./forumProxy');
 
 // Debug middleware để log routes
 router.use((req, res, next) => {
@@ -40,5 +41,10 @@ router.use('/courses', (req, res, next) => {
   console.log(`   Request URL: ${req.url}`);
   next();
 }, coursesProxy);
+
+router.use('/forum', (req, res, next) => {
+  console.log(`🔗 Routing to forumProxy: ${req.method} ${req.path}`);
+  next();
+}, forumProxy);
 
 module.exports = router;

@@ -7,7 +7,10 @@ const coursesProxy = createProxyMiddleware({
   // Same pattern as documentsProxy - when mounted at /courses, path is already stripped
   // So /api/courses -> /courses in router -> / (empty) in middleware
   // We need to add /courses prefix back
-  pathRewrite: { '^/(.*)': '/courses/$1' }, // Add /courses prefix to match service routes
+  pathRewrite: (path, req) => {
+    // Add /courses prefix to match service routes
+    return `/courses${path}`;
+  },
   selfHandleResponse: false,
   timeout: 300000, // 5 minutes timeout for large file uploads
   proxyTimeout: 300000, // 5 minutes proxy timeout

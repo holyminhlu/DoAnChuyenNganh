@@ -3,7 +3,10 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 module.exports = createProxyMiddleware({
   target: 'http://localhost:3003', // Documents service port
   changeOrigin: true,
-  pathRewrite: { '^/(.*)': '/documents/$1' }, // Add /documents prefix to match service routes
+  pathRewrite: (path, req) => {
+    // Add /documents prefix to match service routes
+    return `/documents${path}`;
+  },
   selfHandleResponse: false,
   timeout: 30000, // 30 seconds timeout
   proxyTimeout: 30000, // 30 seconds proxy timeout
