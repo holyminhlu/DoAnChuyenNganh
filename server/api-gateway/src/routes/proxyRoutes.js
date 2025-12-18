@@ -10,7 +10,6 @@ const documentsProxy = require('./documentsProxy');
 const coursesProxy = require('./coursesProxy');
 const forumProxy = require('./forumProxy');
 const paymentsProxy = require('./paymentsProxy');
-const sepayIPNProxy = require('./sepayIPNProxy');
 
 // Debug middleware để log routes
 router.use((req, res, next) => {
@@ -53,11 +52,5 @@ router.use('/payments', (req, res, next) => {
   console.log(`🔗 Routing to paymentsProxy: ${req.method} ${req.path}`);
   next();
 }, paymentsProxy);
-
-// SePay IPN endpoint - Route chuyên dụng cho SePay IPN callback
-router.use('/payment/sepay/ipn', (req, res, next) => {
-  console.log(`📨 Routing to SePay IPN Proxy: ${req.method} ${req.path}`);
-  next();
-}, sepayIPNProxy);
 
 module.exports = router;

@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/EduShareDB';
 
-// Test courses data - 5 khóa học với giá 5000 VND
+// Test courses data - 5 khóa học với giá 2000 VND
 const testCourses = [
     {
         title: 'Khóa Học Lập Trình JavaScript Cơ Bản - Test Payment',
@@ -21,8 +21,8 @@ const testCourses = [
         level: 'beginner',
         pricing: {
             isFree: false,
-            price: 5000,
-            originalPrice: 10000,
+            price: 2000,
+            originalPrice: 5000,
             currency: 'VND'
         },
         duration: 8, // hours
@@ -107,8 +107,8 @@ const testCourses = [
         level: 'intermediate',
         pricing: {
             isFree: false,
-            price: 5000,
-            originalPrice: 15000,
+            price: 2000,
+            originalPrice: 8000,
             currency: 'VND'
         },
         duration: 12,
@@ -171,8 +171,8 @@ const testCourses = [
         level: 'beginner',
         pricing: {
             isFree: false,
-            price: 5000,
-            originalPrice: 12000,
+            price: 2000,
+            originalPrice: 6000,
             currency: 'VND'
         },
         duration: 10,
@@ -235,8 +235,8 @@ const testCourses = [
         level: 'intermediate',
         pricing: {
             isFree: false,
-            price: 5000,
-            originalPrice: 20000,
+            price: 2000,
+            originalPrice: 10000,
             currency: 'VND'
         },
         duration: 15,
@@ -299,8 +299,8 @@ const testCourses = [
         level: 'beginner',
         pricing: {
             isFree: false,
-            price: 5000,
-            originalPrice: 18000,
+            price: 2000,
+            originalPrice: 9000,
             currency: 'VND'
         },
         duration: 14,
@@ -413,4 +413,6 @@ async function createTestCourses() {
 
 // Run script
 createTestCourses();
+
+
 

@@ -25,16 +25,10 @@ app.use((req, res, next) => {
   // Skip body parsing for forum routes to avoid ECONNRESET issues
   const isForumRoute = req.originalUrl.includes('/forum') || req.path.includes('/forum');
   
-  // Skip body parsing for SePay IPN - IPN sẽ được parse bởi course service
-  const isSePayIPN = req.originalUrl.includes('/payment/sepay/ipn') || req.path.includes('/payment/sepay/ipn');
-  
   if ((isEnrollRoute && req.method === 'POST') || 
-      (isForumRoute && (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')) ||
-      (isSePayIPN && req.method === 'POST')) {
+      (isForumRoute && (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH'))) {
     if (isForumRoute) {
       console.log('⏭️ Skipping body parsing for forum route - proxy will handle raw stream');
-    } else if (isSePayIPN) {
-      console.log('⏭️ Skipping body parsing for SePay IPN - proxy will handle');
     } else {
       console.log('⏭️ Skipping body parsing for courses enroll - proxy will handle');
     }
@@ -81,7 +75,6 @@ app.get('/', (req, res) => {
       courses: 'GET /api/courses',
       documents: 'GET /api/documents',
       auth: 'POST /api/auth/login',
-      payments: 'POST /api/payments',
       test: 'GET /test'
     },
     services: {
@@ -100,8 +93,7 @@ app.get('/test', (req, res) => {
     routes: {
       courses: '/api/courses',
       documents: '/api/documents',
-      auth: '/api/auth',
-      payments: '/api/payments'
+      auth: '/api/auth'
     }
   });
 });
@@ -119,7 +111,6 @@ app.use((req, res) => {
       courses: 'GET /api/courses',
       documents: 'GET /api/documents',
       auth: 'POST /api/auth/login',
-      payments: 'POST /api/payments',
       test: 'GET /test'
     }
   });

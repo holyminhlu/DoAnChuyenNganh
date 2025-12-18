@@ -1,23 +1,21 @@
 {
   "name": "course-service",
   "version": "1.0.0",
-  "description": "course-service for EduShare",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "create-collection": "node scripts/create-enrollments-collection.js",
-    "create-test-courses": "node scripts/create-test-courses.js"
+    "dev": "nodemon index.js",
+    "test": "echo \"No tests specified\" && exit 0"
   },
-  "author": "HoLyMinhLu",
-  "license": "ISC",
   "dependencies": {
-    "axios": "^1.13.2",
+    "@payos/node": "^1.0.0",
+    "axios": "^1.7.7",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "mongoose": "^8.15.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.8.1",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "sepay-pg-node": "^1.0.0",
     "uuid": "^9.0.1"
   }
 }

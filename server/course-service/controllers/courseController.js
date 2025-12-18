@@ -1,5 +1,6 @@
 const Course = require('../models/courseModel')
 const Enrollment = require('../models/enrollmentModel')
+const Payment = require('../models/paymentModel')
 const mongoose = require('mongoose')
 const multer = require('multer')
 const path = require('path')
@@ -532,6 +533,46 @@ exports.enrollCourse = async (req, res) => {
             })
         }
 
+        // Check if course requires payment
+        if (!course.pricing.isFree && course.pricing.price > 0) {
+            // Check if user has completed payment for this course
+            const completedPayment = await Payment.findOne({
+                user_id: user_id,
+                course_id: course.course_id,
+                status: 'completed'
+            })
+
+            if (!completedPayment) {
+                // Check if there's a pending payment
+                const pendingPayment = await Payment.findOne({
+                    user_id: user_id,
+                    course_id: course.course_id,
+                    status: { $in: ['pending', 'processing'] }
+                })
+
+                if (pendingPayment) {
+                    return res.status(402).json({
+                        success: false,
+                        message: 'Vui lòng hoàn tất thanh toán để đăng ký khóa học',
+                        requiresPayment: true,
+                        payment_id: pendingPayment.payment_id,
+                        payment_url: pendingPayment.sepay_payment_url,
+                        va_info: pendingPayment.va_info
+                    })
+                }
+
+                // No payment found, need to create payment
+                return res.status(402).json({
+                    success: false,
+                    message: 'Khóa học này yêu cầu thanh toán. Vui lòng thanh toán trước khi đăng ký.',
+                    requiresPayment: true,
+                    course_id: course.course_id,
+                    amount: course.pricing.price,
+                    currency: course.pricing.currency
+                })
+            }
+        }
+
         // Create enrollment
         const enrollment = new Enrollment({
             user_id: user_id,
@@ -600,10 +641,19 @@ exports.getMyEnrollments = async (req, res) => {
         // Get course details for each enrollment
         const enrollmentsWithCourses = await Promise.all(
             enrollments.map(async (enrollment) => {
-                const course = await Course.findOne({ course_id: enrollment.course_id })
-                
+                // Hỗ trợ cả trường hợp course_id lưu theo business course_id hoặc MongoDB _id
+                let course = await Course.findOne({ course_id: enrollment.course_id })
+
+                if (!course && typeof enrollment.course_id === 'string' && /^[0-9a-fA-F]{24}$/.test(enrollment.course_id)) {
+                    try {
+                        course = await Course.findById(enrollment.course_id)
+                    } catch (e) {
+                        console.log(`⚠️ Error finding course by _id (${enrollment.course_id}):`, e.message)
+                    }
+                }
+
                 if (!course) {
-                    console.log(`⚠️ Course not found: ${enrollment.course_id}`)
+                    console.log(`⚠️ Course not found for enrollment: ${enrollment.course_id}`)
                     return null
                 }
 

@@ -1,0 +1,3 @@
+cd C:\ngrok
+.\ngrok config add-authtoken 36s3IgiETYT8CqNd1HQZxiamZvc_3F4RoVc4QN23N39KACGA3
+.\ngrok http 3000
