@@ -3,6 +3,9 @@ import axios from 'axios'
 // Use relative path to go through Vue proxy
 const API_BASE_URL = '/api/courses'
 
+// Payment API base – tạm thời gọi trực tiếp course-service để tránh lỗi proxy
+const PAYMENTS_BASE_URL = 'http://localhost:3004/payments'
+
 /**
  * Get all courses
  */
@@ -102,6 +105,64 @@ export async function getMyEnrollments(userId) {
   } catch (error) {
     console.error('Error fetching my enrollments:', error)
     throw error
+  }
+}
+
+/**
+ * Create payment via PayOS (backend: POST /api/payments/create)
+ */
+export async function createPayment(courseId, userId, customerInfo = {}) {
+  try {
+    if (!courseId) throw new Error('courseId is required')
+    if (!userId) throw new Error('userId is required')
+
+    console.log('💳 Creating payment (PayOS):', { courseId, userId })
+
+    const response = await axios.post(
+      `${PAYMENTS_BASE_URL}/create`,
+      {
+        course_id: courseId,
+        user_id: userId,
+        customer_name: customerInfo.customer_name,
+        customer_email: customerInfo.customer_email,
+        customer_phone: customerInfo.customer_phone
+      },
+      {
+        // Tăng timeout để chờ PayOS (backend cũng có timeout nội bộ 10s)
+        timeout: 40000,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.error('❌ Error creating payment (PayOS):', error)
+    if (error.response) return error.response.data
+    return {
+      success: false,
+      message: error.message || 'Có lỗi xảy ra khi tạo thanh toán',
+      error
+    }
+  }
+}
+
+/**
+ * Get payment status via backend (GET /api/payments/:payment_id/status)
+ */
+export async function getPaymentStatus(paymentId) {
+  try {
+    if (!paymentId) throw new Error('paymentId is required')
+    const response = await axios.get(`${PAYMENTS_BASE_URL}/${paymentId}/status`, {
+      timeout: 10000
+    })
+    return response.data
+  } catch (error) {
+    console.error('❌ Error getting payment status (PayOS):', error)
+    if (error.response) return error.response.data
+    return {
+      success: false,
+      message: error.message || 'Có lỗi xảy ra khi kiểm tra trạng thái thanh toán',
+      error
+    }
   }
 }
 

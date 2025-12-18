@@ -166,7 +166,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getCourseById, enrollCourse, getEnrollment } from '@/utils/courseAPI'
+import { getCourseById, enrollCourse, getEnrollment, createPayment } from '@/utils/courseAPI'
 
 export default {
   name: 'CourseIntroductionView',
@@ -220,6 +220,45 @@ export default {
         return
       }
 
+      // Nếu khóa học có phí, tạo PayOS payment link và chuyển sang trang thanh toán
+      if (course.value && !course.value.pricing.isFree && course.value.pricing.price > 0) {
+        enrolling.value = true
+        try {
+          const courseId = route.params.id
+          console.log('💳 Course requires payment, creating PayOS payment...', { courseId, userId })
+
+          const paymentResponse = await createPayment(courseId, userId)
+          console.log('💳 Payment response:', paymentResponse)
+
+          if (paymentResponse && paymentResponse.success && paymentResponse.data) {
+            const paymentData = paymentResponse.data
+            localStorage.setItem('pendingPayment', JSON.stringify({
+              payment_id: paymentData.payment_id,
+              course_id: courseId,
+              amount: paymentData.amount,
+              payment_url: paymentData.payment_url
+            }))
+
+            // Chuyển sang PaymentVAView để user bấm nút thanh toán (mở PayOS checkoutUrl)
+            router.push(`/payment/va?payment_id=${paymentData.payment_id}&course_id=${courseId}&amount=${paymentData.amount}`)
+            return
+          } else {
+            const errorMessage = paymentResponse?.message || 'Không thể tạo payment. Vui lòng thử lại.'
+            console.error('❌ Payment creation failed:', errorMessage, paymentResponse)
+            alert(errorMessage)
+            return
+          }
+        } catch (error) {
+          console.error('❌ Unexpected error creating payment:', error)
+          const errorMessage = error?.message || error?.response?.data?.message || 'Có lỗi xảy ra khi tạo payment. Vui lòng thử lại.'
+          alert(errorMessage)
+          return
+        } finally {
+          enrolling.value = false
+        }
+      }
+
+      // For free courses, enroll directly
       enrolling.value = true
       try {
         const courseId = route.params.id
@@ -230,16 +269,28 @@ export default {
         
         if (response && response.success) {
           isEnrolled.value = true
-          if (course.value.pricing.isFree) {
-            // For free courses, go directly to learning page
-            alert('Đăng ký khóa học thành công!')
-            goToLearning()
+          // For free courses, go directly to learning page
+          alert('Đăng ký khóa học thành công!')
+          goToLearning()
+        } else if (response && response.requiresPayment) {
+          // Backend says payment is required
+          console.log('💳 Payment required, creating payment...')
+          
+          const paymentResponse = await createPayment(courseId, userId)
+          
+          if (paymentResponse && paymentResponse.success && paymentResponse.data) {
+            const paymentData = paymentResponse.data
+            localStorage.setItem('pendingPayment', JSON.stringify({
+              payment_id: paymentData.payment_id,
+              course_id: courseId,
+              amount: paymentData.amount,
+              va_info: paymentData.va_info,
+              qr_code_url: paymentData.qr_code_url
+            }))
+            
+            router.push(`/payment/va?payment_id=${paymentData.payment_id}&course_id=${courseId}&amount=${paymentData.amount}`)
           } else {
-            // Ask user if they want to go to My Courses
-            const goToMyCourses = confirm('Đăng ký khóa học thành công! Bạn có muốn xem khóa học của tôi không?')
-            if (goToMyCourses) {
-              router.push('/courses/mine')
-            }
+            alert(paymentResponse?.message || 'Không thể tạo payment. Vui lòng thử lại.')
           }
         } else {
           const errorMessage = response?.message || 'Đăng ký khóa học thất bại'

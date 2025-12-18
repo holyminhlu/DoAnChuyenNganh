@@ -19,6 +19,7 @@ import DocumentsView from '../views/DocumentsView.vue';
 import CoursesView from '../views/CoursesView.vue';
 import CourseIntroductionView from '../views/CourseIntroductionView.vue';
 import CourseLearningView from '../views/CourseLearningView.vue';
+import PaymentVAView from '../views/PaymentVAView.vue';
 import ClassRegisterView from '../views/ClassRegisterView.vue';
 import MyClassesView from '../views/MyClassesView.vue';
 import HelpView from '../views/HelpView.vue';
@@ -57,6 +58,7 @@ const routes = [
     {path: '/courses/mine', name: 'MyCourses', component: () => import('../views/MyCoursesView.vue')},
     {path: '/course/:id', name: 'CourseIntroduction', component: CourseIntroductionView},
     {path: '/course/:id/learn', name: 'CourseLearning', component: CourseLearningView},
+    {path: '/payment/va', name: 'PaymentVA', component: PaymentVAView},
     {path: '/classes/register', name: 'ClassRegister', component: ClassRegisterView},
     {path: '/classes/mine', name: 'MyClasses', component: MyClassesView},
     {path: '/help', name: 'Help', component: HelpView},
