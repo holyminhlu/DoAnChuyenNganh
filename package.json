@@ -10,6 +10,7 @@
   "dependencies": {
     "@vuepic/vue-datepicker": "^11.0.2",
     "aos": "^2.3.4",
+    "axios": "^1.13.2",
     "bootstrap": "^5.3.6",
     "core-js": "^3.8.3",
     "docx-preview": "^0.3.7",

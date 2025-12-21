@@ -71,92 +71,7 @@
               </svg>
               <span>Hồ sơ</span>
             </router-link>
-
-            <a
-              href="#"
-              class="action-item"
-              role="menuitem"
-              @click.prevent="navigateToProfileTab('documents')"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <span>Tài liệu của tôi</span>
-            </a>
-
-            <a
-              href="#"
-              class="action-item"
-              role="menuitem"
-              @click.prevent="navigateToProfileTab('bookmarks')"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span>Đã lưu</span>
-            </a>
-
-            <a
-              href="#"
-              class="action-item"
-              role="menuitem"
-              @click.prevent="navigateToProfileTab('activity')"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-              </svg>
-              <span>Hoạt động</span>
-            </a>
-
-            <button
-              class="action-item action-upload"
-              role="menuitem"
-              @click="handleUpload"
-              aria-label="Tải lên tài liệu"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <span>Tải lên tài liệu</span>
-            </button>
-
-            <a
-              href="#"
-              class="action-item"
-              role="menuitem"
-              @click.prevent="navigateToProfileTab('settings')"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
-              </svg>
-              <span>Cài đặt</span>
-            </a>
           </nav>
-
-          <div class="dropdown-divider"></div>
-
-          <!-- Toggles -->
-          <div class="dropdown-toggles">
-            <label class="toggle-item">
-              <input
-                type="checkbox"
-                v-model="darkMode"
-                @change="handleDarkModeToggle"
-                aria-label="Bật chế độ tối"
-              />
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-              <span>Chế độ tối</span>
-            </label>
-          </div>
 
           <div class="dropdown-divider"></div>
 
@@ -216,7 +131,6 @@ export default {
   setup(props, { emit }) {
     const router = useRouter()
     const showLogoutConfirm = ref(false)
-    const darkMode = ref(false)
     const isMobile = ref(window.innerWidth < 600)
     
     // Reactive avatar and stats from localStorage
@@ -327,28 +241,6 @@ export default {
       close()
     }
 
-    // Handle upload - navigate to documents page and open upload modal
-    const handleUpload = () => {
-      close()
-      router.push('/documents?upload=true').then(() => {
-        // Emit event to open upload modal after navigation
-        setTimeout(() => {
-          bus.emit('open-upload-modal')
-        }, 100)
-      })
-    }
-    
-    // Handle navigation to profile tabs
-    const navigateToProfileTab = (tab) => {
-      close()
-      router.push(`/profile?tab=${tab}`)
-    }
-
-    // Handle dark mode toggle
-    const handleDarkModeToggle = () => {
-      document.documentElement.classList.toggle('dark-mode', darkMode.value)
-      localStorage.setItem('darkMode', darkMode.value ? 'true' : 'false')
-    }
 
     // Handle logout
     const handleLogout = () => {
@@ -420,11 +312,6 @@ export default {
 
     // Check for saved dark mode preference
     onMounted(() => {
-      const saved = localStorage.getItem('darkMode') === 'true'
-      darkMode.value = saved
-      if (saved) {
-        document.documentElement.classList.add('dark-mode')
-      }
       window.addEventListener('resize', handleResize)
       
       // Set up localStorage polling to detect changes
@@ -448,18 +335,14 @@ export default {
 
     return {
       showLogoutConfirm,
-      darkMode,
       isMobile,
       userInitial,
       userRole,
       truncateBio,
       avatarUrl,
       displayStats,
-      navigateToProfileTab,
       close,
       handleOverlayClick,
-      handleUpload,
-      handleDarkModeToggle,
       handleLogout,
       confirmLogout,
       handleTab,

@@ -113,23 +113,6 @@
         </select>
       </div>
 
-      <!-- Level Filter -->
-      <div class="filter-section">
-        <label class="filter-label" for="filter-level">
-          Mức độ
-        </label>
-        <select
-          id="filter-level"
-          v-model="localFilters.level"
-          class="filter-select"
-          @change="emitFilters"
-        >
-          <option value="">Tất cả</option>
-          <option value="basic">Cơ bản</option>
-          <option value="advanced">Nâng cao</option>
-        </select>
-      </div>
-
       <!-- Language Filter -->
       <div class="filter-section">
         <label class="filter-label" for="filter-language">
@@ -182,57 +165,13 @@
         </div>
       </div>
 
-      <!-- Rating Filter -->
-      <div class="filter-section">
-        <label class="filter-label">
-          Đánh giá tối thiểu
-        </label>
-        <div class="rating-filter">
-          <input
-            id="filter-rating"
-            v-model.number="localFilters.minRating"
-            type="range"
-            min="0"
-            max="5"
-            step="0.1"
-            class="rating-slider"
-            @input="emitFilters"
-          />
-          <div class="rating-display">
-            <span>{{ localFilters.minRating.toFixed(1) }}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sort By -->
-      <div class="filter-section">
-        <label class="filter-label" for="filter-sort">
-          Sắp xếp theo
-        </label>
-        <select
-          id="filter-sort"
-          v-model="localFilters.sortBy"
-          class="filter-select"
-          @change="emitFilters"
-        >
-          <option value="relevance">Phù hợp nhất</option>
-          <option value="newest">Mới nhất</option>
-          <option value="downloads">Nhiều lượt tải</option>
-          <option value="rating">Đánh giá cao</option>
-        </select>
-      </div>
-
-      <!-- Clear All Button -->
+      <!-- Reset Filters Button -->
       <button
-        v-if="hasActiveFilters"
-        class="clear-all-btn"
+        class="reset-filters-btn"
         type="button"
         @click="clearAllFilters"
       >
-        Xóa tất cả bộ lọc
+        Đặt lại bộ lọc
       </button>
     </div>
   </div>
@@ -251,11 +190,8 @@ export default {
         program: '',
         year: '',
         fileType: '',
-        level: '',
         language: '',
-        tags: [],
-        minRating: 0,
-        sortBy: 'relevance'
+        tags: []
       })
     },
     programs: {
@@ -292,11 +228,8 @@ export default {
              localFilters.value.program !== '' ||
              localFilters.value.year !== '' ||
              localFilters.value.fileType !== '' ||
-             localFilters.value.level !== '' ||
              localFilters.value.language !== '' ||
-             localFilters.value.tags.length > 0 ||
-             localFilters.value.minRating > 0 ||
-             localFilters.value.sortBy !== 'relevance'
+             localFilters.value.tags.length > 0
     })
 
     const emitFilters = () => {
@@ -329,11 +262,8 @@ export default {
         program: '',
         year: '',
         fileType: '',
-        level: '',
         language: '',
-        tags: [],
-        minRating: 0,
-        sortBy: 'relevance'
+        tags: []
       }
       emitFilters()
     }
@@ -556,84 +486,28 @@ export default {
   color: var(--color-error);
 }
 
-.rating-filter {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-}
 
-.rating-slider {
-  flex: 1;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--color-neutral-200);
-  outline: none;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.rating-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+.reset-filters-btn {
+  padding: var(--spacing-3) var(--spacing-4);
   background: var(--color-primary);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.rating-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-.rating-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  cursor: pointer;
+  color: white;
   border: none;
-  transition: var(--transition-fast);
-}
-
-.rating-slider::-moz-range-thumb:hover {
-  transform: scale(1.2);
-}
-
-.rating-slider:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 4px;
-}
-
-.rating-display {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-1);
-  min-width: 60px;
-  color: var(--color-accent);
-  font-weight: var(--font-weight-semibold);
-}
-
-.clear-all-btn {
-  padding: var(--spacing-3);
-  background: var(--color-neutral-100);
-  color: var(--color-dark);
-  border: 2px solid var(--color-neutral-300);
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: var(--transition-base);
-  margin-top: var(--spacing-2);
+  margin-top: var(--spacing-4);
+  width: 100%;
+  font-size: var(--font-size-base);
 }
 
-.clear-all-btn:hover {
-  background: var(--color-neutral-200);
-  border-color: var(--color-neutral-400);
+.reset-filters-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.clear-all-btn:focus-visible {
+.reset-filters-btn:focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -648,7 +522,6 @@ export default {
   .toggle-icon,
   .filter-select,
   .tags-input,
-  .rating-slider,
   .clear-all-btn {
     transition: none;
   }

@@ -47,7 +47,7 @@
             <div class="empty-icon">📖</div>
             <h3>Chưa có khóa học nào</h3>
             <p>Bạn chưa đăng ký khóa học nào. Hãy khám phá các khóa học mới!</p>
-            <router-link to="/courses" class="btn-primary">Khám phá khóa học</router-link>
+            <router-link to="/courses" class="btn-primary">Khóa học</router-link>
           </div>
 
           <div v-else class="courses-grid">
@@ -685,7 +685,9 @@ export default {
   text-decoration: none;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 1 rem;
   transition: all 0.3s;
+  white-space: nowrap;
 }
 
 .btn-primary:hover {

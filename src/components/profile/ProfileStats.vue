@@ -12,9 +12,9 @@
       <div class="stat-value">{{ formatNumber(bookmarks) }}</div>
       <div class="stat-label">Đã lưu</div>
     </div>
-    <div class="stat-item" :title="`${points} điểm uy tín`">
+    <div class="stat-item" :title="`${points} điểm uy tín (Tính năng đang phát triển)`">
       <div class="stat-value">{{ formatNumber(points) }}</div>
-      <div class="stat-label">Điểm</div>
+      <div class="stat-label">Điểm <span class="dev-badge">(Đang phát triển)</span></div>
     </div>
   </div>
 </template>
@@ -82,6 +82,15 @@ export default {
   color: #64748B;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.dev-badge {
+  font-size: 0.7rem;
+  color: #F59E0B;
+  text-transform: none;
+  font-weight: 500;
+  display: block;
+  margin-top: 0.25rem;
 }
 </style>
 

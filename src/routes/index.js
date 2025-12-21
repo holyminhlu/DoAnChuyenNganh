@@ -11,6 +11,7 @@ import UserInfoView from '../views/UserInfoView.vue';
 // Phần Article
 import GioiThieu from '../views/Articles/GioiThieu.vue';
 import ChinhSach from '../views/Articles/ChinhSach.vue';
+import TermsOfService from '../views/Articles/TermsOfService.vue';
 import HotNews from '../views/Articles/HotNews.vue';
 import DienDan from '../views/Articles/DienDan.vue';
 import Blog from '../views/Articles/Blog.vue';
@@ -43,8 +44,10 @@ const routes = [
   //  {path: '/search-results', name: 'SearchResults', component: SearchResults},
     {path: '/gioithieu', name: 'GioiThieu', component: GioiThieu},
     {path: '/chinhsach', name: 'ChinhSach', component: ChinhSach},
+    {path: '/dieu-khoan', name: 'TermsOfService', component: TermsOfService},
     {path: '/hotnews', name: 'HotNews', component: HotNews},
     {path: '/blog', name: 'Blog', component: Blog},
+    {path: '/blog/:slug', name: 'BlogDetail', component: () => import('../views/Articles/BlogDetail.vue')},
     {path: '/diendan', name: 'DienDan', component: DienDan},
     {path: '/tour-thuong', name: 'TourThuong', component: DocumentsView}, // Redirected to Documents
     {path: '/tour-theo-doan', name: 'TourTheoDoan', component: CoursesView}, // Redirected to Courses
@@ -62,11 +65,38 @@ const routes = [
     {path: '/classes/register', name: 'ClassRegister', component: ClassRegisterView},
     {path: '/classes/mine', name: 'MyClasses', component: MyClassesView},
     {path: '/help', name: 'Help', component: HelpView},
+    // Admin routes
+    {path: '/administrator', name: 'AdminLogin', component: () => import('../views/AdminLoginView.vue')},
+    {path: '/administrator/manager-dashboard', name: 'AdminDashboard', component: () => import('../views/AdminDashboardView.vue'), meta: { requiresAuth: true, requiresAdmin: true }},
 ]
 
 const router = createRouter({
     history: createWebHistory(),
     routes
+})
+
+// Route guard for admin routes and set page title
+router.beforeEach((to, from, next) => {
+    // Set page title for all routes
+    document.title = to.meta?.title || 'Open Learn Foundation'
+    
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+    const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+    
+    if (requiresAuth || requiresAdmin) {
+        const token = localStorage.getItem('token')
+        const role = localStorage.getItem('userRole')
+        
+        if (!token) {
+            next('/administrator')
+        } else if (requiresAdmin && role !== 'admin') {
+            next('/administrator')
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 export default router

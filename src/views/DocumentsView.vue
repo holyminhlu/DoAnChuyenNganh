@@ -23,7 +23,7 @@
     <!-- Header Region -->
     <header class="page-header" id="main-content">
       <div class="header-content">
-        <h1 class="page-title">📚 Thư Viện Tài Liệu</h1>
+        <h1 class="page-title">Thư Viện Tài Liệu</h1>
         <p class="page-subtitle">
           Khám phá hàng ngàn tài liệu chất lượng cao từ mọi lĩnh vực. 
         </p>
@@ -65,57 +65,6 @@
     <div class="page-layout">
       <!-- Sidebar (Desktop) -->
       <aside class="sidebar" role="complementary" aria-label="Sidebar">
-        <!-- Featured Collections -->
-        <section class="sidebar-section">
-          <h2 class="sidebar-title">Bộ sưu tập nổi bật</h2>
-          <ul class="collections-list" role="list">
-            <li
-              v-for="collection in featuredCollections"
-              :key="collection.id"
-              class="collection-item"
-              role="listitem"
-            >
-              <button
-                class="collection-link"
-                type="button"
-                @click="filterByCollection(collection)"
-              >
-                <span class="collection-icon">{{ collection.icon }}</span>
-                <div class="collection-info">
-                  <span class="collection-title">{{ collection.title }}</span>
-                  <span class="collection-count">{{ collection.count }} tài liệu</span>
-    </div>
-              </button>
-            </li>
-          </ul>
-        </section>
-
-        <!-- Top Authors -->
-        <section class="sidebar-section">
-          <h2 class="sidebar-title">Tác giả hàng đầu</h2>
-          <ul class="authors-list" role="list">
-            <li
-              v-for="author in topAuthors"
-              :key="author.id"
-              class="author-item"
-              role="listitem"
-            >
-              <div class="author-info">
-                <img
-                  v-if="author.avatar"
-                  :src="author.avatar"
-                  :alt="`Avatar của ${author.name}`"
-                  class="author-avatar"
-                />
-                <div class="author-details">
-                  <span class="author-name">{{ author.name }}</span>
-                  <span class="author-count">{{ author.documentsCount }} tài liệu</span>
-          </div>
-          </div>
-            </li>
-          </ul>
-        </section>
-
         <!-- Quick Tags -->
         <section class="sidebar-section">
           <h2 class="sidebar-title">Thẻ phổ biến</h2>
@@ -204,7 +153,7 @@
             <DocumentCard
               :document="formatDocumentForCard(doc)"
               @preview="handlePreview"
-              @download="handleDownload"
+              @download="(doc) => handleDownload(doc)"
               @save="handleSave"
             />
           </article>
@@ -269,7 +218,7 @@
       :is-open="previewModalOpen"
       :document="selectedDocument"
       @close="previewModalOpen = false"
-      @download="handleDownload"
+      @download="(doc) => handleDownload(doc)"
       @report="handleReport"
     />
 
@@ -316,11 +265,8 @@ export default {
       program: '',
       year: '',
       fileType: '',
-      level: '',
       language: '',
-      tags: [],
-      minRating: 0,
-      sortBy: 'relevance'
+      tags: []
     })
     const previewModalOpen = ref(false)
     const selectedDocument = ref(null)
@@ -328,12 +274,11 @@ export default {
     const currentPage = ref(1)
     const documentsPerPage = 12
     const useInfiniteScroll = ref(true) // Can be configured
+    const downloadingDocuments = ref(new Set()) // Track documents being downloaded to prevent duplicate calls
 
     // Data
     const programs = ref(documentsData.programs || [])
     const categories = ref(documentsData.categories || [])
-    const featuredCollections = ref(documentsData.featuredCollections || [])
-    const topAuthors = ref(documentsData.topAuthors || [])
     const quickTags = ref(documentsData.quickTags || [])
     const availableTags = computed(() => {
       const tagSet = new Set(quickTags.value || [])
@@ -481,8 +426,6 @@ export default {
         tags: normalizeTags(doc.tags),
         downloads: Number(doc.downloads || doc.downloadCount || 0),
         views: Number(doc.views || doc.viewCount || 0),
-        rating: Number(doc.rating || 0),
-        ratingCount: Number(doc.ratingCount || 0),
         fileType: (rawFile?.fileType || doc.fileType || '').toString(),
         file: rawFile,
         fileUrl: resolvedFileUrl,
@@ -564,12 +507,6 @@ export default {
         result = result.filter(doc => doc.fileType?.toLowerCase() === selectedFileType)
       }
 
-      // Level filter
-      if (activeFilters.value.level) {
-        const selectedLevel = activeFilters.value.level.toLowerCase()
-        result = result.filter(doc => doc.level?.toLowerCase() === selectedLevel)
-      }
-
       // Language filter
       if (activeFilters.value.language) {
         const selectedLanguage = activeFilters.value.language.toLowerCase()
@@ -592,36 +529,15 @@ export default {
         })
       }
 
-      // Rating filter
-      if (activeFilters.value.minRating > 0) {
-        const minRating = Number(activeFilters.value.minRating)
-        result = result.filter(doc => Number(doc.rating || 0) >= minRating)
-      }
-
-      // Sort
-      switch (activeFilters.value.sortBy) {
-        case 'newest':
-          result.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate))
-          break
-        case 'downloads':
-          result.sort((a, b) => b.downloads - a.downloads)
-          break
-        case 'rating':
-          result.sort((a, b) => b.rating - a.rating)
-          break
-        case 'relevance':
-        default:
-          // Relevance: prioritize search matches, then rating
-          if (searchQuery.value.trim()) {
-            result.sort((a, b) => {
-              const aScore = calculateRelevanceScore(a)
-              const bScore = calculateRelevanceScore(b)
-              return bScore - aScore
-            })
-          } else {
-            result.sort((a, b) => b.rating - a.rating)
-          }
-          break
+      // Sort - always use relevance
+      if (searchQuery.value.trim()) {
+        result.sort((a, b) => {
+          const aScore = calculateRelevanceScore(a)
+          const bScore = calculateRelevanceScore(b)
+          return bScore - aScore
+        })
+      } else {
+        result.sort((a, b) => new Date(b.uploadDate || b.createdAt) - new Date(a.uploadDate || a.createdAt))
       }
 
       return result
@@ -632,11 +548,8 @@ export default {
              activeFilters.value.program !== '' ||
              activeFilters.value.year !== '' ||
              activeFilters.value.fileType !== '' ||
-             activeFilters.value.level !== '' ||
              activeFilters.value.language !== '' ||
-             activeFilters.value.tags.length > 0 ||
-             activeFilters.value.minRating > 0 ||
-             activeFilters.value.sortBy !== 'relevance'
+             activeFilters.value.tags.length > 0
     })
 
     const activeFilterChips = computed(() => {
@@ -653,18 +566,12 @@ export default {
       if (activeFilters.value.fileType) {
         chips.fileType = activeFilters.value.fileType.toUpperCase()
       }
-      if (activeFilters.value.level) {
-        chips.level = activeFilters.value.level === 'basic' ? 'Cơ bản' : 'Nâng cao'
-      }
       if (activeFilters.value.language) {
         chips.language = activeFilters.value.language === 'vi' ? 'Tiếng Việt' : 'English'
       }
       activeFilters.value.tags.forEach(tag => {
         chips[`tag-${tag}`] = tag
       })
-      if (activeFilters.value.minRating > 0) {
-        chips.rating = `${activeFilters.value.minRating.toFixed(1)}+ ⭐`
-      }
       return chips
     })
 
@@ -733,12 +640,12 @@ export default {
         }
         params.append('page', '1')
         params.append('limit', API_FETCH_LIMIT)
-        params.append('sortBy', activeFilters.value.sortBy)
-        
+        params.append('sortBy', 'relevance')
+
         const queryString = params.toString()
         const url = queryString 
           ? `/api/documents/search?${queryString}`
-          : `/api/documents?page=1&limit=${API_FETCH_LIMIT}&sortBy=${activeFilters.value.sortBy}`
+          : `/api/documents?page=1&limit=${API_FETCH_LIMIT}&sortBy=relevance`
         
         console.log('🔗 Request URL:', url)
         
@@ -772,10 +679,10 @@ export default {
     }
 
     const calculateRelevanceScore = (doc) => {
-      if (!searchQuery.value.trim()) return doc.rating
+      if (!searchQuery.value.trim()) return 0
 
       const query = searchQuery.value.toLowerCase()
-      let score = doc.rating || 0
+      let score = 0
 
       // Title match (highest weight)
       if (doc.title.toLowerCase().includes(query)) {
@@ -813,7 +720,6 @@ export default {
         program: doc.program,
         tags: doc.tags || [],
         downloads: doc.downloads || 0,
-        rating: doc.rating || 0,
         year: doc.year,
         fileType: doc.fileType?.toUpperCase() || 'PDF',
         license: doc.license,
@@ -842,10 +748,7 @@ export default {
           activeFilters.value.tags.splice(index, 1)
         }
       } else {
-        activeFilters.value[key] = key === 'tags' ? [] : key === 'minRating' ? 0 : ''
-      }
-      if (key === 'sortBy') {
-        activeFilters.value.sortBy = 'relevance'
+        activeFilters.value[key] = key === 'tags' ? [] : ''
       }
       handleFilterChange()
     }
@@ -856,11 +759,8 @@ export default {
         program: '',
         year: '',
         fileType: '',
-        level: '',
         language: '',
-        tags: [],
-        minRating: 0,
-        sortBy: 'relevance'
+        tags: []
       }
       searchQuery.value = ''
       currentPage.value = 1
@@ -874,36 +774,133 @@ export default {
       }
     }
 
-    // eslint-disable-next-line no-unused-vars
-    const filterByCollection = (_collection) => {
-      // Implementation depends on collection structure
-      // For now, just clear and show a message
-      clearAllFilters()
-    }
-
     const getFilterLabel = (key) => {
       const labels = {
         category: 'Chuyên ngành',
         program: 'Chương trình',
         year: 'Năm',
         fileType: 'Loại file',
-        level: 'Mức độ',
-        language: 'Ngôn ngữ',
-        rating: 'Đánh giá'
+        language: 'Ngôn ngữ'
       }
       return labels[key] || key
     }
 
-    const handlePreview = (document) => {
+    const handlePreview = async (document) => {
       const fullDocument = documents.value.find(doc => doc.id === document.id) || document
       selectedDocument.value = fullDocument
       previewModalOpen.value = true
+      
+      // Increment views when preview is opened
+      try {
+        const documentId = fullDocument.document_id || fullDocument.id
+        if (documentId) {
+          const response = await fetch(`/api/documents/${documentId}/view`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (response.ok) {
+            const result = await response.json()
+            // Update local document views count with server value
+            const docIndex = documents.value.findIndex(doc => 
+              (doc.document_id || doc.id) === documentId
+            )
+            if (docIndex !== -1 && documents.value[docIndex] && result.data?.views !== undefined) {
+              documents.value[docIndex].views = result.data.views
+            }
+            
+            // Also update selectedDocument
+            if (selectedDocument.value && 
+                (selectedDocument.value.document_id || selectedDocument.value.id) === documentId &&
+                result.data?.views !== undefined) {
+              selectedDocument.value.views = result.data.views
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error incrementing views:', error)
+        // Don't block preview if API call fails
+      }
     }
 
-    const handleDownload = (document) => {
-      // In production, track download and trigger actual download
-      console.log('Download:', document)
-      // window.open(document.fileUrl, '_blank')
+    const handleDownload = async (document) => {
+      // Prevent duplicate calls by checking immediately
+      const documentId = document?.document_id || document?.id
+      
+      if (!documentId) {
+        console.error('❌ No document ID available')
+        return
+      }
+
+      // Check if already downloading - must be synchronous check
+      if (downloadingDocuments.value.has(documentId)) {
+        console.log('⚠️ Download already in progress for document:', documentId, '- skipping duplicate call')
+        return
+      }
+
+      // Mark as downloading IMMEDIATELY (synchronous operation)
+      downloadingDocuments.value.add(documentId)
+      console.log('⬇️ [Download] Starting download for document:', documentId, 'at', new Date().toISOString())
+
+      try {
+        const fileUrl = document.fileUrl || document.file?.fileUrl || ''
+        
+        if (!fileUrl) {
+          console.error('❌ No file URL available for download')
+          downloadingDocuments.value.delete(documentId)
+          return
+        }
+
+        // Increment downloads first
+        try {
+          console.log('📡 [Download] Calling API to increment downloads for:', documentId)
+          const response = await fetch(`/api/documents/${documentId}/download`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (!response.ok) {
+            console.error('❌ Failed to increment downloads:', response.status, response.statusText)
+          } else {
+            const result = await response.json()
+            console.log('✅ [Download] Download count incremented:', result.data?.downloads)
+            
+            // Update local document downloads count with server value
+            const docIndex = documents.value.findIndex(doc => 
+              (doc.document_id || doc.id) === documentId
+            )
+            if (docIndex !== -1 && documents.value[docIndex] && result.data?.downloads !== undefined) {
+              documents.value[docIndex].downloads = result.data.downloads
+            }
+            
+            // Also update selectedDocument if it's the same document
+            if (selectedDocument.value && 
+                (selectedDocument.value.document_id || selectedDocument.value.id) === documentId &&
+                result.data?.downloads !== undefined) {
+              selectedDocument.value.downloads = result.data.downloads
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error incrementing downloads:', error)
+          // Continue with download even if API call fails
+        }
+
+        // Trigger actual download
+        console.log('📥 [Download] Opening file:', fileUrl)
+        window.open(fileUrl, '_blank')
+      } catch (error) {
+        console.error('❌ Error downloading document:', error)
+      } finally {
+        // Remove from downloading set after a delay to prevent rapid duplicate calls
+        setTimeout(() => {
+          downloadingDocuments.value.delete(documentId)
+          console.log('🔄 [Download] Removed download lock for document:', documentId)
+        }, 3000) // Tăng lên 3 giây để chắc chắn không bị duplicate
+      }
     }
 
     const handleSave = async (data) => {
@@ -984,6 +981,7 @@ export default {
       alert('Tính năng báo cáo sẽ được triển khai sớm.')
     }
 
+
     // eslint-disable-next-line no-unused-vars
     const handleUploadSuccess = (_data) => {
       // Refresh documents list
@@ -1010,11 +1008,8 @@ export default {
       if (activeFilters.value.program) query.program = activeFilters.value.program
       if (activeFilters.value.year) query.year = activeFilters.value.year
       if (activeFilters.value.fileType) query.fileType = activeFilters.value.fileType
-      if (activeFilters.value.level) query.level = activeFilters.value.level
       if (activeFilters.value.language) query.language = activeFilters.value.language
       if (activeFilters.value.tags.length > 0) query.tags = activeFilters.value.tags.join(',')
-      if (activeFilters.value.minRating > 0) query.minRating = activeFilters.value.minRating
-      if (activeFilters.value.sortBy !== 'relevance') query.sort = activeFilters.value.sortBy
       if (currentPage.value > 1) query.page = currentPage.value
 
       router.replace({ query })
@@ -1027,11 +1022,8 @@ export default {
       if (query.program) activeFilters.value.program = query.program
       if (query.year) activeFilters.value.year = query.year
       if (query.fileType) activeFilters.value.fileType = query.fileType
-      if (query.level) activeFilters.value.level = query.level
       if (query.language) activeFilters.value.language = query.language
       if (query.tags) activeFilters.value.tags = query.tags.split(',')
-      if (query.minRating) activeFilters.value.minRating = parseFloat(query.minRating)
-      if (query.sort) activeFilters.value.sortBy = query.sort
       if (query.page) currentPage.value = parseInt(query.page)
     }
 
@@ -1100,8 +1092,6 @@ export default {
       useInfiniteScroll,
       programs,
       categories,
-      featuredCollections,
-      topAuthors,
       quickTags,
       availableTags,
       isLoggedIn,
@@ -1119,7 +1109,6 @@ export default {
       removeFilter,
       clearAllFilters,
       addTagFilter,
-      filterByCollection,
       getFilterLabel,
       handlePreview,
       handleDownload,

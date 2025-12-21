@@ -84,14 +84,14 @@
           Nếu bạn không tìm thấy câu trả lời, vui lòng liên hệ với chúng tôi:
         </p>
         <div class="contact-methods">
-          <a href="mailto:support@edushare.vn" class="contact-method">
+          <a href="mailto:openlearnfoundation.support@gmail.com" class="contact-method">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
             <div>
               <strong>Email</strong>
-              <span>support@edushare.vn</span>
+              <span>openlearnfoundation.support@gmail.com</span>
             </div>
           </a>
           <div class="contact-method">
@@ -208,7 +208,7 @@ export default {
           },
           {
             question: 'Làm thế nào để báo cáo lỗi?',
-            answer: 'Nếu bạn gặp lỗi, vui lòng gửi email đến support@edushare.vn kèm theo mô tả chi tiết lỗi, ảnh chụp màn hình (nếu có), và trình duyệt bạn đang sử dụng.'
+            answer: 'Nếu bạn gặp lỗi, vui lòng gửi email đến openlearnfoundation.support@gmail.com kèm theo mô tả chi tiết lỗi, ảnh chụp màn hình (nếu có), và trình duyệt bạn đang sử dụng.'
           },
           {
             question: 'Tại sao không thể đăng nhập?',

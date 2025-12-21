@@ -23,7 +23,7 @@
             </div>
             <div class="contact-item">
               <span class="icon">📧</span>
-              <span>contact@edushare.edu.vn</span>
+              <span>openlearnfoundation.support@gmail.com</span>
             </div>
             <div class="contact-item">
               <span class="icon">📞</span>
@@ -36,11 +36,11 @@
         <div class="footer-section">
           <h4 class="footer-title">Liên kết nhanh</h4>
           <ul class="footer-links">
-            <li><a href="#" class="footer-link">Trang chủ</a></li>
-            <li><a href="#" class="footer-link">Tài liệu</a></li>
-            <li><a href="#" class="footer-link">Khóa học</a></li>
-            <li><a href="#" class="footer-link">Diễn đàn</a></li>
-            <li><a href="#" class="footer-link">Blog</a></li>
+            <li><router-link to="/" class="footer-link">Trang chủ</router-link></li>
+            <li><router-link to="/documents" class="footer-link">Tài liệu</router-link></li>
+            <li><router-link to="/courses" class="footer-link">Khóa học</router-link></li>
+            <li><router-link to="/diendan" class="footer-link">Diễn đàn</router-link></li>
+            <li><router-link to="/blog" class="footer-link">Blog</router-link></li>
           </ul>
         </div>
         
@@ -48,11 +48,11 @@
         <div class="footer-section">
           <h4 class="footer-title">Hỗ trợ</h4>
           <ul class="footer-links">
-            <li><a href="#" class="footer-link">Trung tâm trợ giúp</a></li>
-            <li><a href="#" class="footer-link">Hướng dẫn sử dụng</a></li>
-            <li><a href="#" class="footer-link">Chính sách bảo mật</a></li>
-            <li><a href="#" class="footer-link">Điều khoản sử dụng</a></li>
-            <li><a href="#" class="footer-link">Liên hệ</a></li>
+            <li><router-link to="/help" class="footer-link">Trung tâm trợ giúp</router-link></li>
+            <li><router-link to="/help" class="footer-link">Hướng dẫn sử dụng</router-link></li>
+            <li><router-link to="/chinhsach" class="footer-link">Chính sách bảo mật</router-link></li>
+            <li><router-link to="/dieu-khoan" class="footer-link">Điều khoản sử dụng</router-link></li>
+            <li><router-link to="/gioithieu" class="footer-link">Liên hệ</router-link></li>
           </ul>
         </div>
         
@@ -60,17 +60,11 @@
         <div class="footer-section">
           <h4 class="footer-title">Kết nối với chúng tôi</h4>
           <div class="social-links">
-            <a href="#" class="social-link facebook" title="Facebook">
+            <a href="https://www.facebook.com/share/1A2mcCMJda/" target="_blank" rel="noopener noreferrer" class="social-link facebook" title="Facebook">
               <span class="social-icon">f</span>
             </a>
-            <a href="#" class="social-link youtube" title="YouTube">
+            <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="social-link youtube" title="YouTube">
               <span class="social-icon">▶</span>
-            </a>
-            <a href="#" class="social-link discord" title="Discord">
-              <span class="social-icon">D</span>
-            </a>
-            <a href="#" class="social-link tiktok" title="TikTok">
-              <span class="social-icon">♪</span>
             </a>
           </div>
           
@@ -88,7 +82,7 @@
       <div class="footer-bottom">
         <div class="footer-bottom-content">
           <p class="copyright">
-            © 2024 EduShare. Tất cả quyền được bảo lưu.
+            © 2024 Open Learn Foundation. Tất cả quyền được bảo lưu.
           </p>
           <p class="project-info">
             Đồ án Chuyên ngành CNTT - Sinh viên DA22TTB<br>
@@ -232,16 +226,6 @@
 
 .social-link.youtube {
   background: #ff0000;
-  color: white;
-}
-
-.social-link.discord {
-  background: #5865f2;
-  color: white;
-}
-
-.social-link.tiktok {
-  background: linear-gradient(45deg, #00f2ea, #ff0050);
   color: white;
 }
 

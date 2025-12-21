@@ -76,16 +76,6 @@
               </div>
               <div class="stats-row">
                 <div class="stat-card">
-                  <span class="stat-label">Đánh giá</span>
-                  <div class="stat-value">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <span>{{ document.rating ? document.rating.toFixed(1) : 'Chưa có' }}</span>
-                  </div>
-                  <small v-if="document.ratingCount">{{ document.ratingCount }} lượt đánh giá</small>
-                </div>
-                <div class="stat-card">
                   <span class="stat-label">Lượt tải</span>
                   <div class="stat-value">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -298,6 +288,8 @@ export default {
   },
   emits: ['close', 'download', 'report'],
   setup(props, { emit }) {
+    const isLoggedIn = ref(localStorage.getItem('isLoggedIn') === 'true')
+    const userId = ref(localStorage.getItem('userId') || localStorage.getItem('user_id'))
     const modalContainer = ref(null)
     const previewType = ref('placeholder')
     const docxPreviewEl = ref(null)
@@ -496,16 +488,15 @@ export default {
     }
 
     const handleImmediateDownload = () => {
-      handleDownload()
-      const url = resolveFileUrl()
-      if (url) {
-        window.open(url, '_blank')
-      }
+      // Chỉ emit download event, không mở file ở đây
+      // DocumentsView.handleDownload sẽ xử lý cả increment API và mở file
+      emit('download', props.document)
     }
 
     const handleReport = () => {
       emit('report', props.document)
     }
+
 
     const formatNumber = (num) => {
       if (num >= 1000) {
@@ -551,7 +542,9 @@ export default {
       handleImmediateDownload,
       handleReport,
       formatNumber,
-      formatDate
+      formatDate,
+      isLoggedIn,
+      userId
     }
   }
 }
@@ -1048,6 +1041,13 @@ export default {
   flex-direction: row;
   gap: 0.75rem;
   width: 100%;
+}
+
+
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
 }
 
 .action-row .btn {

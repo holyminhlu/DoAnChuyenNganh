@@ -4,7 +4,7 @@
       <div class="row justify-content-center">
         <div class="col-lg-8">
           <!-- Header -->
-          <div class="text-center mb-4">
+          <div class="text-center mb-4 payment-header">
             <h1 class="mb-3">Thanh toán khóa học</h1>
             <p class="text-muted">Quét QR code hoặc chuyển khoản theo thông tin bên dưới</p>
           </div>
@@ -124,12 +124,12 @@
           </div>
 
           <!-- Actions -->
-          <div class="text-center">
-            <button @click="checkPaymentStatus" class="btn btn-primary me-2" :disabled="checking">
+          <div class="text-center payment-actions">
+            <button @click="checkPaymentStatus" class="btn btn-primary me-2 payment-action-btn payment-check-btn" :disabled="checking">
               <i class="fa fa-refresh" :class="{ 'fa-spin': checking }"></i>
               {{ checking ? 'Đang kiểm tra...' : 'Kiểm tra thanh toán' }}
             </button>
-            <button @click="goBack" class="btn btn-outline-secondary">
+            <button @click="goBack" class="btn btn-outline-secondary payment-action-btn payment-back-btn">
               <i class="fa fa-arrow-left"></i> Quay lại
             </button>
           </div>
@@ -347,6 +347,10 @@ export default {
   padding: 2rem 0;
 }
 
+.payment-header {
+  margin-top: 3rem;
+}
+
 .card {
   border: none;
   border-radius: 12px;
@@ -430,7 +434,47 @@ export default {
   }
 }
 
+.payment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.payment-action-btn {
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5rem;
+  border: 2px solid transparent;
+  white-space: nowrap;
+  line-height: 1;
+  vertical-align: middle;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.payment-check-btn {
+  font-size: 0.875rem;
+}
+
+.payment-action-btn.btn-outline-secondary {
+  border: 2px solid #6c757d;
+}
+
+.payment-action-btn.btn-primary {
+  border: 2px solid transparent;
+}
+
 @media (max-width: 768px) {
+  .payment-header {
+    margin-top: 2rem;
+  }
+  
   .qr-code-img {
     width: 200px;
     height: 200px;
@@ -444,6 +488,15 @@ export default {
   .va-value button {
     margin-top: 0.5rem;
     margin-left: 0 !important;
+  }
+  
+  .payment-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .payment-action-btn {
+    width: 100%;
   }
 }
 </style>

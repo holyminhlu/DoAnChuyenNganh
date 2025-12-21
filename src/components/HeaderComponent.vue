@@ -34,27 +34,6 @@
               <router-link to="/courses/upload" class="dropdown-item" @click="forceCloseDropdown">Upload khóa học</router-link>
             </div>
           </div>
-          <div 
-            class="nav-dropdown" 
-            @mouseenter="openDropdown('classes')" 
-            @mouseleave="closeDropdown"
-          >
-            <button 
-              class="nav-link dropdown-toggle"
-              @mouseenter="openDropdown('classes')"
-            >
-              Lớp học
-            </button>
-            <div 
-              class="dropdown-menu" 
-              :class="{ open: openMenu === 'classes' }"
-              @mouseenter="keepDropdownOpen('classes')"
-              @mouseleave="handleDropdownLeave"
-            >
-              <router-link to="/classes/register" class="dropdown-item" @click="forceCloseDropdown">Đăng ký lớp</router-link>
-              <router-link to="/classes/mine" class="dropdown-item" @click="forceCloseDropdown">Lớp của tôi</router-link>
-            </div>
-          </div>
           <router-link to="/diendan" class="nav-link">Diễn đàn</router-link>
           <router-link to="/blog" class="nav-link">Blog</router-link>
         </nav>
@@ -111,11 +90,6 @@
           <router-link to="/courses/enroll" class="mobile-nav-link sub disabled" @click="closeMobileMenu">Đăng ký khóa học <span class="badge">(đang phát triển)</span></router-link>
           <router-link to="/courses/mine" class="mobile-nav-link sub" @click="closeMobileMenu">Khóa học của tôi</router-link>
           <router-link to="/courses/upload" class="mobile-nav-link sub" @click="closeMobileMenu">Upload khóa học</router-link>
-        </div>
-        <div class="mobile-submenu">
-          <span class="mobile-nav-link">Lớp học</span>
-          <router-link to="/classes/register" class="mobile-nav-link sub" @click="closeMobileMenu">Đăng ký lớp</router-link>
-          <router-link to="/classes/mine" class="mobile-nav-link sub" @click="closeMobileMenu">Lớp của tôi</router-link>
         </div>
         <router-link to="/diendan" class="mobile-nav-link" @click="closeMobileMenu">Diễn đàn</router-link>
         <router-link to="/blog" class="mobile-nav-link" @click="closeMobileMenu">Blog</router-link>

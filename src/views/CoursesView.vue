@@ -3,7 +3,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">
-        <h1 class="page-title">🎓 Khóa Học Trực Tuyến</h1>
+        <h1 class="page-title">Khóa Học Trực Tuyến</h1>
         <p class="page-subtitle">
           Học tập có hệ thống với các khóa học từ cơ bản đến nâng cao.
           Được thiết kế bởi các chuyên gia hàng đầu trong ngành.
@@ -26,8 +26,8 @@
         <div class="stat-label">Giảng viên</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">{{ stats.averageRating }}</div>
-        <div class="stat-label">Đánh giá TB</div>
+        <div class="stat-number">{{ stats.totalCompleted }}</div>
+        <div class="stat-label">Khóa học đã hoàn thành</div>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
       <div class="filters-container">
         <div class="filter-group">
           <label class="filter-label">
-            <i class="icon">📖</i> Chủ đề
+            Chủ đề
           </label>
           <select v-model="filters.category" @change="applyFilters" class="filter-select">
             <option value="">Tất cả chủ đề</option>
@@ -51,7 +51,7 @@
 
         <div class="filter-group">
           <label class="filter-label">
-            <i class="icon">🎯</i> Cấp độ
+            Cấp độ
           </label>
           <select v-model="filters.level" @change="applyFilters" class="filter-select">
             <option value="">Tất cả cấp độ</option>
@@ -64,7 +64,7 @@
 
         <div class="filter-group">
           <label class="filter-label">
-            <i class="icon">💰</i> Giá
+            Giá
           </label>
           <select v-model="filters.price" @change="applyFilters" class="filter-select">
             <option value="">Tất cả</option>
@@ -75,7 +75,7 @@
 
         <div class="filter-group">
           <label class="filter-label">
-            <i class="icon">⏱️</i> Thời lượng
+            Thời lượng
           </label>
           <select v-model="filters.duration" @change="applyFilters" class="filter-select">
             <option value="">Tất cả</option>
@@ -123,7 +123,7 @@
               🔥 Best Seller
             </div>
             <div class="course-duration">
-              <i class="icon">🕐</i> {{ course.duration }}
+              {{ course.duration }}
             </div>
           </div>
 
@@ -142,13 +142,8 @@
 
             <div class="course-stats">
               <div class="stat">
-                <i class="icon">⭐</i>
-                <span class="stat-value">{{ course.rating.toFixed(1) }}</span>
-                <span class="stat-count">({{ course.reviewCount }})</span>
-              </div>
-              <div class="stat">
-                <i class="icon">👥</i>
                 <span class="stat-value">{{ formatStudents(course.enrolledCount) }}</span>
+                <span class="stat-label">học viên</span>
               </div>
             </div>
 
@@ -170,7 +165,6 @@
             </div>
 
             <button class="enroll-btn">
-              <i class="icon">📚</i> 
               {{ course.isFree ? 'Học ngay' : 'Đăng ký' }}
             </button>
           </div>
@@ -185,7 +179,7 @@
         :disabled="currentPage === 1"
         @click="changePage(currentPage - 1)"
       >
-        <i class="icon">←</i>
+        ←
       </button>
       
       <button
@@ -203,7 +197,7 @@
         :disabled="currentPage === totalPages"
         @click="changePage(currentPage + 1)"
       >
-        <i class="icon">→</i>
+        →
       </button>
     </div>
   </div>
@@ -223,10 +217,10 @@ export default {
     const coursesPerPage = 9
 
     const stats = ref({
-      totalCourses: 256,
-      totalStudents: 12547,
-      totalInstructors: 48,
-      averageRating: 4.8
+      totalCourses: 0,
+      totalStudents: 0,
+      totalInstructors: 0,
+      totalCompleted: 0
     })
 
     // Filters
@@ -351,14 +345,6 @@ export default {
             createdAt: course.createdAt ? new Date(course.createdAt) : new Date()
           }))
           
-          // Update stats
-          if (result.data.length > 0) {
-            stats.value.totalCourses = result.pagination?.total || courses.value.length
-            const totalEnrolled = courses.value.reduce((sum, c) => sum + (c.enrolledCount || 0), 0)
-            stats.value.totalStudents = totalEnrolled
-            const avgRating = courses.value.reduce((sum, c) => sum + (c.rating || 0), 0) / courses.value.length
-            stats.value.averageRating = avgRating.toFixed(1)
-          }
         } else {
           console.warn('No courses found or invalid response:', result)
           courses.value = []
@@ -431,8 +417,45 @@ export default {
       return count.toString()
     }
 
+    const fetchStats = async () => {
+      try {
+        console.log('📊 Fetching course stats from /api/courses/stats...')
+        const response = await fetch('/api/courses/stats')
+        console.log('📊 Stats response status:', response.status)
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('❌ Stats API error:', response.status, errorText)
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const result = await response.json()
+        console.log('📊 Stats API result:', result)
+        
+        if (result.success && result.data) {
+          stats.value = {
+            totalCourses: result.data.totalCourses || 0,
+            totalStudents: result.data.totalStudents || 0,
+            totalInstructors: result.data.totalInstructors || 0,
+            totalCompleted: result.data.totalCompleted || 0
+          }
+          console.log('✅ Stats loaded successfully:', stats.value)
+        } else {
+          console.warn('⚠️ Stats API returned unsuccessful response:', result)
+        }
+      } catch (error) {
+        console.error('❌ Error fetching stats:', error)
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack
+        })
+        // Keep default values (0) if fetch fails
+      }
+    }
+
     onMounted(() => {
-      console.log('CoursesView mounted, fetching courses...')
+      console.log('CoursesView mounted, fetching courses and stats...')
+      fetchStats()
       fetchCourses()
     })
 

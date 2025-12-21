@@ -1,0 +1,234 @@
+{
+  "posts": [
+    {
+      "blog_post_id": "blog_1",
+      "title": "7 Kỹ Thuật Ghi Nhớ Giúp Học Nhanh Gấp Đôi",
+      "slug": "7-ky-thuat-ghi-nho-giup-hoc-nhanh-gap-doi",
+      "description": "Áp dụng phương pháp Feynman, Pomodoro và Spaced Repetition để tối ưu hóa quá trình học tập của bạn. Khám phá các kỹ thuật đã được khoa học chứng minh.",
+      "content": "# 7 Kỹ Thuật Ghi Nhớ Giúp Học Nhanh Gấp Đôi\n\n## 1. Phương Pháp Feynman\n\nPhương pháp Feynman yêu cầu bạn giải thích một khái niệm như thể bạn đang dạy cho một đứa trẻ. Điều này buộc bạn phải hiểu sâu sắc và đơn giản hóa thông tin.\n\n**Các bước thực hiện:**\n1. Chọn một chủ đề\n2. Giải thích bằng ngôn ngữ đơn giản\n3. Xác định khoảng trống kiến thức\n4. Quay lại và học lại\n\n## 2. Kỹ Thuật Pomodoro\n\nKỹ thuật Pomodoro giúp bạn tập trung trong 25 phút, sau đó nghỉ 5 phút. Chu kỳ này giúp não bộ duy trì sự tập trung tối đa.\n\n```javascript\n// Ví dụ timer Pomodoro\nfunction startPomodoro() {\n  const workTime = 25 * 60; // 25 phút\n  const breakTime = 5 * 60; // 5 phút\n  // Logic timer...\n}\n```\n\n## 3. Spaced Repetition\n\nHệ thống lặp lại cách quãng giúp củng cố kiến thức trong trí nhớ dài hạn. Sử dụng các ứng dụng như Anki để tối ưu hóa việc ôn tập.\n\n## 4. Active Recall\n\nThay vì đọc lại, hãy tự kiểm tra kiến thức của mình. Viết ra những gì bạn nhớ mà không nhìn vào tài liệu.\n\n## 5. Mind Mapping\n\nSử dụng sơ đồ tư duy để kết nối các khái niệm. Điều này giúp não bộ tạo ra các liên kết mạnh mẽ hơn.\n\n## 6. Interleaving\n\nThay vì học một chủ đề liên tục, hãy xen kẽ các chủ đề khác nhau. Điều này giúp não bộ phân biệt và áp dụng kiến thức tốt hơn.\n\n## 7. Elaborative Interrogation\n\nTự hỏi \"Tại sao?\" và \"Như thế nào?\" khi học. Điều này giúp bạn hiểu sâu hơn về mối quan hệ giữa các khái niệm.\n\n---\n\n**Kết luận:** Kết hợp các kỹ thuật này sẽ giúp bạn học tập hiệu quả hơn và ghi nhớ lâu dài hơn.",
+      "category": "Mẹo học tập",
+      "tags": ["learning", "productivity", "memory", "study-tips"],
+      "author": {
+        "id": "author_1",
+        "name": "Lan Pham",
+        "avatar": "/img/images/tranding-food-1.png"
+      },
+      "coverImage": "/img/images/tranding-food-1.png",
+      "readingTime": 8,
+      "featured": true,
+      "status": "published",
+      "views": 1250,
+      "likes": 89,
+      "publishedDate": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_2",
+      "title": "Bí Quyết Học Từ Vựng IELTS Bền Vững",
+      "slug": "bi-quyet-hoc-tu-vung-ielts-ben-vung",
+      "description": "Kết hợp Shadowing, Collocations và thói quen đọc hàng ngày để xây dựng vốn từ vựng IELTS vững chắc. Phương pháp đã được chứng minh bởi hàng nghìn học viên.",
+      "content": "# Bí Quyết Học Từ Vựng IELTS Bền Vững\n\n## Tầm Quan Trọng Của Từ Vựng IELTS\n\nTừ vựng chiếm 25% điểm số trong bài thi IELTS. Việc học từ vựng hiệu quả là chìa khóa để đạt điểm cao.\n\n## Phương Pháp Shadowing\n\nShadowing là kỹ thuật lặp lại ngay sau khi nghe. Điều này giúp bạn:\n- Cải thiện phát âm\n- Ghi nhớ từ vựng tự nhiên\n- Phát triển ngữ điệu\n\n**Cách thực hiện:**\n1. Nghe một đoạn audio ngắn\n2. Lặp lại ngay sau khi nghe\n3. Ghi âm và so sánh\n4. Lặp lại cho đến khi thành thạo\n\n## Học Collocations\n\nCollocations là các cụm từ thường đi cùng nhau. Ví dụ:\n- Make a decision (không phải do a decision)\n- Take a break (không phải have a break)\n\n**Tài liệu học collocations:**\n- Oxford Collocations Dictionary\n- IELTS Vocabulary Builder\n\n## Thói Quen Đọc Hàng Ngày\n\nĐọc ít nhất 30 phút mỗi ngày từ các nguồn:\n- BBC News\n- The Guardian\n- Academic journals\n\n## Sử Dụng Flashcards\n\nTạo flashcards với:\n- Từ vựng\n- Nghĩa\n- Ví dụ câu\n- Phát âm\n\n## Luyện Tập Viết\n\nSử dụng từ vựng mới trong bài viết để củng cố trí nhớ.\n\n---\n\n**Kết luận:** Kết hợp các phương pháp trên sẽ giúp bạn xây dựng vốn từ vựng IELTS vững chắc và bền vững.",
+      "category": "Mẹo học tập",
+      "tags": ["ielts", "english", "vocabulary", "language-learning"],
+      "author": {
+        "id": "author_2",
+        "name": "Quang Tran",
+        "avatar": "/img/images/tranding-food-2.png"
+      },
+      "coverImage": "/img/images/tranding-food-2.png",
+      "readingTime": 6,
+      "featured": true,
+      "status": "published",
+      "views": 980,
+      "likes": 72,
+      "publishedDate": "2024-01-14T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_3",
+      "title": "Lộ Trình Học JavaScript Hiện Đại 2025",
+      "slug": "lo-trinh-hoc-javascript-hien-dai-2025",
+      "description": "ESNext, TypeScript, React/Vue, Testing, Performance - Hướng dẫn chi tiết lộ trình học JavaScript từ cơ bản đến nâng cao cho năm 2025.",
+      "content": "# Lộ Trình Học JavaScript Hiện Đại 2025\n\n## Giai Đoạn 1: Nền Tảng (2-3 tháng)\n\n### JavaScript Cơ Bản\n- Variables, Data Types\n- Functions, Arrays, Objects\n- Control Flow\n- ES6+ Features\n\n```javascript\n// ES6+ Features\nconst arrowFunction = () => {\n  return 'Hello World';\n};\n\nconst destructuring = { name, age } = user;\nconst spread = [...array1, ...array2];\n```\n\n### DOM Manipulation\n- Query Selectors\n- Event Handling\n- Dynamic Content\n\n## Giai Đoạn 2: Nâng Cao (2-3 tháng)\n\n### Asynchronous JavaScript\n- Promises\n- Async/Await\n- Fetch API\n\n```javascript\nasync function fetchData() {\n  try {\n    const response = await fetch('/api/data');\n    const data = await response.json();\n    return data;\n  } catch (error) {\n    console.error('Error:', error);\n  }\n}\n```\n\n### Advanced Concepts\n- Closures\n- Prototypes\n- This Binding\n- Modules\n\n## Giai Đoạn 3: Framework (3-4 tháng)\n\n### React hoặc Vue\n\n**React:**\n- Components\n- Hooks\n- State Management\n- Routing\n\n**Vue:**\n- Components\n- Composition API\n- Vuex/Pinia\n- Vue Router\n\n## Giai Đoạn 4: TypeScript (1-2 tháng)\n\n- Type System\n- Interfaces\n- Generics\n- Type Inference\n\n## Giai Đoạn 5: Testing (1 tháng)\n\n- Unit Testing (Jest)\n- Integration Testing\n- E2E Testing (Cypress)\n\n## Giai Đoạn 6: Performance & Optimization\n\n- Code Splitting\n- Lazy Loading\n- Bundle Optimization\n- Performance Monitoring\n\n---\n\n**Tài liệu tham khảo:**\n- MDN Web Docs\n- JavaScript.info\n- FreeCodeCamp\n- Udemy Courses\n\n**Kết luận:** Lộ trình này sẽ giúp bạn trở thành một JavaScript developer chuyên nghiệp trong 10-12 tháng.",
+      "category": "Công nghệ / Lập trình",
+      "tags": ["javascript", "roadmap", "programming", "web-development"],
+      "author": {
+        "id": "author_3",
+        "name": "Tuan Nguyen",
+        "avatar": "/img/images/tranding-food-3.png"
+      },
+      "coverImage": "/img/images/tranding-food-3.png",
+      "readingTime": 12,
+      "featured": true,
+      "status": "published",
+      "views": 2100,
+      "likes": 156,
+      "publishedDate": "2024-01-13T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_4",
+      "title": "Ghi Chú Hiệu Quả Với Zettelkasten",
+      "slug": "ghi-chu-hieu-qua-voi-zettelkasten",
+      "description": "Cách xây dựng mạng lưới kiến thức cá nhân bằng phương pháp Zettelkasten. Học cách kết nối các ý tưởng và tạo ra hệ thống ghi chú mạnh mẽ.",
+      "content": "# Ghi Chú Hiệu Quả Với Zettelkasten\n\n## Zettelkasten Là Gì?\n\nZettelkasten là một phương pháp ghi chú được phát triển bởi nhà xã hội học Đức Niklas Luhmann. Nó giúp bạn tạo ra một mạng lưới kiến thức liên kết.\n\n## Nguyên Tắc Cơ Bản\n\n1. **Mỗi ghi chú là một ý tưởng duy nhất**\n2. **Liên kết các ghi chú với nhau**\n3. **Sử dụng tags để phân loại**\n4. **Đánh số thứ tự để dễ tìm kiếm**\n\n## Công Cụ\n\n- Obsidian\n- Roam Research\n- Notion\n- Plain text files\n\n## Cách Bắt Đầu\n\n1. Tạo ghi chú đầu tiên\n2. Thêm liên kết đến các ghi chú liên quan\n3. Sử dụng tags\n4. Xây dựng mạng lưới dần dần\n\n---\n\n**Kết luận:** Zettelkasten giúp bạn xây dựng một hệ thống kiến thức cá nhân mạnh mẽ và có thể mở rộng.",
+      "category": "Mẹo học tập",
+      "tags": ["note-taking", "productivity", "knowledge-management"],
+      "author": {
+        "id": "author_4",
+        "name": "My Dang",
+        "avatar": "/img/images/tranding-food-4.png"
+      },
+      "coverImage": "/img/images/tranding-food-4.png",
+      "readingTime": 5,
+      "featured": false,
+      "status": "published",
+      "views": 650,
+      "likes": 45,
+      "publishedDate": "2024-01-12T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_5",
+      "title": "Tối Ưu Thời Gian Với Time Blocking",
+      "slug": "toi-uu-thoi-gian-voi-time-blocking",
+      "description": "Lập lịch theo khối giúp tăng năng suất và giảm căng thẳng. Học cách sử dụng time blocking để quản lý thời gian hiệu quả hơn.",
+      "content": "# Tối Ưu Thời Gian Với Time Blocking\n\n## Time Blocking Là Gì?\n\nTime blocking là kỹ thuật chia ngày thành các khối thời gian cụ thể cho từng nhiệm vụ.\n\n## Lợi Ích\n\n- Tăng năng suất\n- Giảm căng thẳng\n- Tập trung tốt hơn\n- Quản lý thời gian hiệu quả\n\n## Cách Thực Hiện\n\n1. Liệt kê tất cả nhiệm vụ\n2. Ước tính thời gian cho mỗi nhiệm vụ\n3. Chia ngày thành các khối\n4. Gắn nhiệm vụ vào khối thời gian\n5. Tuân thủ lịch trình\n\n## Ví Dụ Lịch Trình\n\n```\n08:00 - 09:00: Học JavaScript\n09:00 - 10:00: Làm bài tập\n10:00 - 10:15: Nghỉ giải lao\n10:15 - 11:30: Đọc tài liệu\n11:30 - 12:00: Trả lời email\n```\n\n## Công Cụ\n\n- Google Calendar\n- Notion\n- Todoist\n- Physical planner\n\n---\n\n**Kết luận:** Time blocking là một công cụ mạnh mẽ để quản lý thời gian và tăng năng suất.",
+      "category": "Kỹ năng mềm",
+      "tags": ["time-management", "productivity", "planning"],
+      "author": {
+        "id": "author_5",
+        "name": "Binh Le",
+        "avatar": "/img/images/tranding-food-5.png"
+      },
+      "coverImage": "/img/images/tranding-food-5.png",
+      "readingTime": 4,
+      "featured": false,
+      "status": "published",
+      "views": 820,
+      "likes": 58,
+      "publishedDate": "2024-01-11T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_6",
+      "title": "30 Dự Án Python Cho Người Mới",
+      "slug": "30-du-an-python-cho-nguoi-moi",
+      "description": "Học qua dự án nhỏ: CLI tools, web apps, data analysis. Danh sách 30 dự án Python từ cơ bản đến nâng cao để thực hành.",
+      "content": "# 30 Dự Án Python Cho Người Mới\n\n## Dự Án Cơ Bản (1-10)\n\n1. Calculator\n2. To-Do List\n3. Password Generator\n4. Rock Paper Scissors\n5. Number Guessing Game\n6. Hangman\n7. Tic Tac Toe\n8. Weather App\n9. URL Shortener\n10. QR Code Generator\n\n## Dự Án Trung Bình (11-20)\n\n11. Blog Website (Flask)\n12. REST API\n13. Web Scraper\n14. Data Visualization\n15. Chat Application\n16. File Manager\n17. Expense Tracker\n18. Music Player\n19. Image Editor\n20. Email Client\n\n## Dự Án Nâng Cao (21-30)\n\n21. Machine Learning Model\n22. E-commerce Platform\n23. Social Media App\n24. Real-time Chat\n25. Blockchain Implementation\n26. Game Engine\n27. Operating System Simulator\n28. Compiler\n29. Database System\n30. Cloud Application\n\n## Tài Nguyên\n\n- GitHub Repositories\n- FreeCodeCamp\n- Real Python\n- Python.org\n\n---\n\n**Kết luận:** Thực hành qua dự án là cách tốt nhất để học Python.",
+      "category": "Công nghệ / Lập trình",
+      "tags": ["python", "programming", "projects", "beginner"],
+      "author": {
+        "id": "author_6",
+        "name": "Hao Pham",
+        "avatar": "/img/images/tranding-food-6.png"
+      },
+      "coverImage": "/img/images/tranding-food-6.png",
+      "readingTime": 10,
+      "featured": false,
+      "status": "published",
+      "views": 1450,
+      "likes": 112,
+      "publishedDate": "2024-01-10T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_7",
+      "title": "Phương Pháp Luyện Nói Tiếng Anh Mỗi Ngày",
+      "slug": "phuong-phap-luyen-noi-tieng-anh-moi-ngay",
+      "description": "Shadowing, recording, conversation clubs - Các phương pháp thực tế để cải thiện kỹ năng nói tiếng Anh hàng ngày.",
+      "content": "# Phương Pháp Luyện Nói Tiếng Anh Mỗi Ngày\n\n## Tầm Quan Trọng Của Luyện Tập Hàng Ngày\n\nLuyện tập hàng ngày là chìa khóa để cải thiện kỹ năng nói tiếng Anh. Chỉ cần 15-30 phút mỗi ngày có thể tạo ra sự khác biệt lớn.\n\n## Phương Pháp Shadowing\n\nShadowing giúp bạn:\n- Cải thiện phát âm\n- Học ngữ điệu tự nhiên\n- Tăng tốc độ nói\n\n## Ghi Âm Và Phân Tích\n\nGhi âm bản thân nói và phân tích:\n- Phát âm\n- Ngữ điệu\n- Tốc độ\n- Độ trôi chảy\n\n## Tham Gia Conversation Clubs\n\n- Tìm các nhóm trực tuyến\n- Tham gia meetups\n- Sử dụng apps như HelloTalk\n\n## Luyện Tập Với AI\n\nSử dụng các công cụ AI để luyện tập:\n- ChatGPT\n- Speech Recognition\n- Language Learning Apps\n\n---\n\n**Kết luận:** Luyện tập hàng ngày với các phương pháp trên sẽ giúp bạn cải thiện kỹ năng nói tiếng Anh đáng kể.",
+      "category": "Mẹo học tập",
+      "tags": ["english", "speaking", "language-learning", "practice"],
+      "author": {
+        "id": "author_7",
+        "name": "Trang Vo",
+        "avatar": "/img/images/tranding-food-7.png"
+      },
+      "coverImage": "/img/images/tranding-food-7.png",
+      "readingTime": 7,
+      "featured": false,
+      "status": "published",
+      "views": 720,
+      "likes": 51,
+      "publishedDate": "2024-01-09T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_8",
+      "title": "Hướng Dẫn Sử Dụng OLF: Tải Và Quản Lý Tài Liệu",
+      "slug": "huong-dan-su-dung-olf-tai-va-quan-ly-tai-lieu",
+      "description": "Hướng dẫn chi tiết cách sử dụng OpenLearnFoundation để tải xuống, quản lý và chia sẻ tài liệu học tập hiệu quả.",
+      "content": "# Hướng Dẫn Sử Dụng OLF: Tải Và Quản Lý Tài Liệu\n\n## Giới Thiệu\n\nOpenLearnFoundation (OLF) là nền tảng chia sẻ tài liệu và học tập trực tuyến. Bài viết này sẽ hướng dẫn bạn cách sử dụng các tính năng chính.\n\n## Tìm Kiếm Tài Liệu\n\n### Tìm Kiếm Cơ Bản\n\n1. Vào trang Documents\n2. Nhập từ khóa vào ô tìm kiếm\n3. Sử dụng bộ lọc để thu hẹp kết quả\n\n### Tìm Kiếm Nâng Cao\n\n- Lọc theo môn học\n- Lọc theo định dạng\n- Lọc theo tác giả\n- Sắp xếp theo ngày, lượt tải\n\n## Tải Xuống Tài Liệu\n\n1. Click vào tài liệu bạn muốn\n2. Xem preview nếu có\n3. Click nút \"Tải xuống\"\n4. Tài liệu sẽ được lưu vào thư mục Downloads\n\n## Quản Lý Tài Liệu Của Bạn\n\n### Upload Tài Liệu\n\n1. Vào trang Upload\n2. Chọn file từ máy tính\n3. Điền thông tin metadata\n4. Click \"Upload\"\n\n### Bookmark Tài Liệu\n\n1. Click icon bookmark trên card tài liệu\n2. Tài liệu sẽ được lưu vào bộ sưu tập của bạn\n3. Xem lại trong phần \"My Collections\"\n\n## Chia Sẻ Tài Liệu\n\n1. Click nút \"Chia sẻ\"\n2. Copy link\n3. Gửi cho bạn bè\n\n---\n\n**Kết luận:** OLF cung cấp nhiều tính năng mạnh mẽ để quản lý tài liệu học tập. Hãy khám phá và tận dụng tối đa!",
+      "category": "Hướng dẫn sử dụng OLF",
+      "tags": ["olf", "tutorial", "documents", "guide"],
+      "author": {
+        "id": "author_8",
+        "name": "Admin OLF",
+        "avatar": "/img/images/tranding-food-1.png"
+      },
+      "coverImage": "/img/images/tranding-food-1.png",
+      "readingTime": 6,
+      "featured": false,
+      "status": "published",
+      "views": 1100,
+      "likes": 78,
+      "publishedDate": "2024-01-08T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_9",
+      "title": "Kinh Nghiệm Sinh Viên: Cân Bằng Học Tập Và Cuộc Sống",
+      "slug": "kinh-nghiem-sinh-vien-can-bang-hoc-tap-va-cuoc-song",
+      "description": "Chia sẻ kinh nghiệm thực tế từ các sinh viên về cách cân bằng giữa học tập, công việc và cuộc sống cá nhân.",
+      "content": "# Kinh Nghiệm Sinh Viên: Cân Bằng Học Tập Và Cuộc Sống\n\n## Thách Thức\n\nSinh viên thường phải đối mặt với nhiều thách thức:\n- Áp lực học tập\n- Công việc part-time\n- Cuộc sống xã hội\n- Sức khỏe tinh thần\n\n## Chiến Lược Cân Bằng\n\n### 1. Quản Lý Thời Gian\n\n- Sử dụng planner\n- Ưu tiên nhiệm vụ\n- Tránh trì hoãn\n\n### 2. Tự Chăm Sóc\n\n- Ngủ đủ giấc\n- Ăn uống lành mạnh\n- Tập thể dục\n- Nghỉ ngơi\n\n### 3. Học Cách Nói Không\n\n- Không cần tham gia mọi hoạt động\n- Ưu tiên sức khỏe\n- Đặt ranh giới\n\n### 4. Tìm Sự Hỗ Trợ\n\n- Gia đình\n- Bạn bè\n- Tư vấn viên\n- Cộng đồng\n\n## Câu Chuyện Thực Tế\n\n> \"Tôi đã học cách ưu tiên và nói không với những việc không quan trọng. Điều này giúp tôi cân bằng tốt hơn.\" - Sinh viên năm 3\n\n---\n\n**Kết luận:** Cân bằng học tập và cuộc sống là một kỹ năng cần thời gian để phát triển. Hãy kiên nhẫn và tìm sự hỗ trợ khi cần.",
+      "category": "Kinh nghiệm sinh viên",
+      "tags": ["student-life", "balance", "wellness", "experience"],
+      "author": {
+        "id": "author_9",
+        "name": "Minh Nguyen",
+        "avatar": "/img/images/tranding-food-2.png"
+      },
+      "coverImage": "/img/images/tranding-food-2.png",
+      "readingTime": 5,
+      "featured": false,
+      "status": "published",
+      "views": 890,
+      "likes": 64,
+      "publishedDate": "2024-01-07T00:00:00.000Z"
+    },
+    {
+      "blog_post_id": "blog_10",
+      "title": "Tài Liệu Học Tập: Cách Tổ Chức Và Lưu Trữ",
+      "slug": "tai-lieu-hoc-tap-cach-to-chuc-va-luu-tru",
+      "description": "Hướng dẫn cách tổ chức và lưu trữ tài liệu học tập hiệu quả. Từ file naming đến folder structure, tất cả những gì bạn cần biết.",
+      "content": "# Tài Liệu Học Tập: Cách Tổ Chức Và Lưu Trữ\n\n## Tầm Quan Trọng Của Tổ Chức\n\nTổ chức tài liệu tốt giúp bạn:\n- Tìm kiếm nhanh chóng\n- Tiết kiệm thời gian\n- Giảm căng thẳng\n- Học tập hiệu quả hơn\n\n## Quy Tắc Đặt Tên File\n\n### Format Chuẩn\n\n```\n[Subject]_[Topic]_[Date]_[Version].pdf\nVí dụ: CS101_DataStructures_2024-01-15_v1.pdf\n```\n\n### Quy Tắc\n\n- Sử dụng dấu gạch dưới hoặc dấu gạch ngang\n- Bao gồm ngày tháng\n- Thêm version nếu có nhiều phiên bản\n- Tránh ký tự đặc biệt\n\n## Cấu Trúc Thư Mục\n\n```\nDocuments/\n├── University/\n│   ├── Year1/\n│   │   ├── Semester1/\n│   │   │   ├── CS101/\n│   │   │   │   ├── Lectures/\n│   │   │   │   ├── Assignments/\n│   │   │   │   └── Notes/\n│   │   │   └── MATH101/\n│   │   └── Semester2/\n│   └── Year2/\n└── Personal/\n```\n\n## Công Cụ Quản Lý\n\n### Cloud Storage\n\n- Google Drive\n- OneDrive\n- Dropbox\n\n### Note-Taking Apps\n\n- Notion\n- Obsidian\n- Evernote\n\n### Reference Managers\n\n- Zotero\n- Mendeley\n- EndNote\n\n## Best Practices\n\n1. Backup thường xuyên\n2. Sử dụng tags\n3. Tạo index files\n4. Dọn dẹp định kỳ\n\n---\n\n**Kết luận:** Tổ chức tài liệu tốt là nền tảng cho việc học tập hiệu quả.",
+      "category": "Tài liệu học tập",
+      "tags": ["organization", "study-materials", "file-management"],
+      "author": {
+        "id": "author_10",
+        "name": "Hoa Le",
+        "avatar": "/img/images/tranding-food-3.png"
+      },
+      "coverImage": "/img/images/tranding-food-3.png",
+      "readingTime": 6,
+      "featured": false,
+      "status": "published",
+      "views": 750,
+      "likes": 52,
+      "publishedDate": "2024-01-06T00:00:00.000Z"
+    }
+  ],
+  "categories": [
+    "Tài liệu học tập",
+    "Mẹo học tập",
+    "Công nghệ / Lập trình",
+    "Kinh nghiệm sinh viên",
+    "Hướng dẫn sử dụng OLF"
+  ],
+  "popularTags": [
+    "learning",
+    "productivity",
+    "javascript",
+    "python",
+    "ielts",
+    "english",
+    "programming",
+    "study-tips",
+    "note-taking",
+    "time-management"
+  ]
+}
+

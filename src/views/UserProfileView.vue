@@ -30,7 +30,7 @@
               :uploads="userProfile.stats?.uploads || 0"
               :downloads="userProfile.stats?.downloads || 0"
               :bookmarks="userProfile.stats?.bookmarks || 0"
-              :points="userProfile.stats?.points || 0"
+              :points="0"
             />
 
             <!-- Bio Card -->
@@ -83,42 +83,11 @@
               :active-tab="activeTab"
               @tab-change="handleTabChange"
             >
-              <!-- Overview Tab -->
-              <template #overview>
-                <div class="tab-content">
-                  <h2 class="tab-title">Tổng quan</h2>
-                  <p v-if="userProfile.bio" class="overview-bio">{{ userProfile.bio }}</p>
-                  
-                  <!-- Highlighted Documents -->
-                  <div v-if="highlightedDocuments.length > 0" class="highlighted-docs">
-                    <h3 class="section-title">Tài liệu nổi bật</h3>
-                    <div class="documents-grid">
-                      <DocumentCard
-                        v-for="doc in highlightedDocuments"
-                        :key="doc.id"
-                        :document="doc"
-                        @preview="handlePreview"
-                        @download="handleDownload"
-                        @save="handleSave"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </template>
-
               <!-- Documents Tab -->
               <template #documents>
                 <div class="tab-content">
                   <div class="documents-header">
                     <h2 class="tab-title">Tài liệu của tôi</h2>
-                    <button v-if="isOwner" class="btn-primary" @click="handleUploadDocument">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                      </svg>
-                      Tải lên tài liệu
-                    </button>
                   </div>
 
                   <!-- Filters and Sort -->
@@ -189,9 +158,6 @@
                     </svg>
                     <h3>Bạn chưa tải lên tài liệu nào</h3>
                     <p v-if="isOwner">Bắt đầu bằng cách tải lên tài liệu đầu tiên của bạn.</p>
-                    <button v-if="isOwner" class="btn-primary" @click="handleUploadDocument">
-                      Tải lên tài liệu đầu tiên
-                    </button>
                   </div>
                 </div>
               </template>
@@ -217,14 +183,6 @@
                     <h3>Chưa có tài liệu nào được lưu</h3>
                     <p>Lưu tài liệu để truy cập nhanh sau này.</p>
                   </div>
-                </div>
-              </template>
-
-              <!-- Activity Tab -->
-              <template #activity>
-                <div class="tab-content">
-                  <h2 class="tab-title">Hoạt động</h2>
-                  <ActivityTimeline :activities="activities" />
                 </div>
               </template>
 
@@ -315,7 +273,6 @@ import ProfileTabs from '@/components/profile/ProfileTabs.vue'
 import EditProfileModal from '@/components/profile/EditProfileModal.vue'
 import AvatarUploader from '@/components/profile/AvatarUploader.vue'
 import CoverUploader from '@/components/profile/CoverUploader.vue'
-import ActivityTimeline from '@/components/profile/ActivityTimeline.vue'
 import SettingsForm from '@/components/profile/SettingsForm.vue'
 import SecurityForm from '@/components/profile/SecurityForm.vue'
 import DocumentCard from '@/components/DocumentCard.vue'
@@ -331,7 +288,6 @@ export default {
     EditProfileModal,
     AvatarUploader,
     CoverUploader,
-    ActivityTimeline,
     SettingsForm,
     SecurityForm,
     DocumentCard,
@@ -343,7 +299,7 @@ export default {
     const router = useRouter()
     
     const loading = ref(true)
-    const activeTab = ref(route.query.tab || 'overview')
+    const activeTab = ref(route.query.tab || 'documents')
     const showEditModal = ref(false)
     const showAvatarUploader = ref(false)
     const showCoverUploader = ref(false)
@@ -366,17 +322,16 @@ export default {
       verified: false,
       location: '',
       joined: '',
-      stats: {
-        uploads: 0,
-        downloads: 0,
-        bookmarks: 0,
-        points: 0
-      }
+          stats: {
+            uploads: 0,
+            downloads: 0,
+            bookmarks: 0,
+            points: 0 // Tính năng đang phát triển
+          }
     })
 
     const documents = ref([])
     const bookmarks = ref([])
-    const activities = ref([])
     const badges = ref([])
     const connectedAccounts = ref([])
 
@@ -410,20 +365,11 @@ export default {
     })
 
     const tabs = computed(() => [
-      { id: 'overview', label: 'Tổng quan', icon: '📊' },
       { id: 'documents', label: 'Tài liệu', icon: '📄' },
       { id: 'bookmarks', label: 'Đã lưu', icon: '🔖' },
-      { id: 'activity', label: 'Hoạt động', icon: '📈' },
       { id: 'settings', label: 'Cài đặt', icon: '⚙️' },
       { id: 'security', label: 'Bảo mật', icon: '🔒' }
     ])
-
-    const highlightedDocuments = computed(() => {
-      return documents.value
-        .filter(doc => doc.visibility === 'public')
-        .sort((a, b) => b.downloads - a.downloads)
-        .slice(0, 6)
-    })
 
     const filteredDocuments = computed(() => {
       let filtered = [...documents.value]
@@ -487,11 +433,10 @@ export default {
 
         userProfile.value = { ...mockData }
         
-        // Fetch documents, bookmarks, activities
+        // Fetch documents, bookmarks
         await Promise.all([
           fetchDocuments(),
-          fetchBookmarks(),
-          fetchActivities()
+          fetchBookmarks()
         ])
       } catch (error) {
         console.error('Error fetching profile:', error)
@@ -523,8 +468,14 @@ export default {
           documents.value = result.data
           // Update stats with actual count
           userProfile.value.stats.uploads = result.data.length
+          // Calculate total downloads from all documents
+          const totalDownloads = result.data.reduce((sum, doc) => {
+            return sum + (doc.downloads || 0)
+          }, 0)
+          userProfile.value.stats.downloads = totalDownloads
         } else {
           documents.value = []
+          userProfile.value.stats.downloads = 0
         }
       } catch (error) {
         console.error('Error fetching documents:', error)
@@ -557,7 +508,31 @@ export default {
         console.log('Bookmarks fetch result:', result)
         
         if (result.success && result.data && Array.isArray(result.data)) {
-          bookmarks.value = result.data
+          // Process bookmarks to ensure thumbnail URLs are correct
+          bookmarks.value = result.data.map(doc => {
+            // Handle thumbnail - can be string or object
+            if (doc.thumbnail) {
+              if (typeof doc.thumbnail === 'object' && doc.thumbnail.fileUrl) {
+                // If thumbnail is an object with fileUrl
+                const thumbUrl = doc.thumbnail.fileUrl
+                if (!thumbUrl.startsWith('http')) {
+                  doc.thumbnail = thumbUrl.startsWith('/') 
+                    ? `http://localhost:3003${thumbUrl}`
+                    : `http://localhost:3003/uploads/thumbnails/${thumbUrl}`
+                } else {
+                  doc.thumbnail = thumbUrl
+                }
+              } else if (typeof doc.thumbnail === 'string') {
+                // If thumbnail is a string
+                if (!doc.thumbnail.startsWith('http')) {
+                  doc.thumbnail = doc.thumbnail.startsWith('/')
+                    ? `http://localhost:3003${doc.thumbnail}`
+                    : `http://localhost:3003/uploads/thumbnails/${doc.thumbnail}`
+                }
+              }
+            }
+            return doc
+          })
           // Update stats with actual count
           userProfile.value.stats.bookmarks = result.data.length
           console.log(`✅ Loaded ${result.data.length} bookmarks`)
@@ -571,18 +546,6 @@ export default {
         bookmarks.value = []
         userProfile.value.stats.bookmarks = 0
       }
-    }
-
-    const fetchActivities = async () => {
-      // TODO: API call
-      activities.value = [
-        {
-          type: 'upload',
-          text: 'Đã tải lên Slide Cơ sở dữ liệu',
-          date: '2024-05-12',
-          icon: '📤'
-        }
-      ]
     }
 
     const handleTabChange = (tabId) => {
@@ -651,11 +614,6 @@ export default {
 
     const handleMessage = () => {
       // TODO: Open message modal
-      showToast('Tính năng đang được phát triển', 'info')
-    }
-
-    const handleUploadDocument = () => {
-      // TODO: Open upload modal
       showToast('Tính năng đang được phát triển', 'info')
     }
 
@@ -807,13 +765,11 @@ export default {
       userProfile,
       documents,
       bookmarks,
-      activities,
       badges,
       connectedAccounts,
       isOwner,
       userRole,
       tabs,
-      highlightedDocuments,
       filteredDocuments,
       documentFilter,
       documentSort,
@@ -833,7 +789,6 @@ export default {
       handleCoverSave,
       handleFollow,
       handleMessage,
-      handleUploadDocument,
       handlePreview,
       handleDownload,
       handleSave,

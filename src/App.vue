@@ -1,8 +1,8 @@
 <template>
   <div>
-    <HeaderComponent/>
+    <HeaderComponent v-if="!isAdminRoute"/>
       <router-view/>
-    <FooterComponent/>
+    <FooterComponent v-if="!isAdminRoute"/>
   </div>
  
 </template>
@@ -16,6 +16,11 @@ export default {
   components: {
     HeaderComponent,
     FooterComponent
+  },
+  computed: {
+    isAdminRoute() {
+      return this.$route.path.startsWith('/administrator')
+    }
   }
 }
 </script>

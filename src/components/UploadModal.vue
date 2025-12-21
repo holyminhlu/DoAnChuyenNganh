@@ -1576,6 +1576,7 @@ export default {
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: var(--spacing-3);
   margin-top: var(--spacing-2);
   padding: var(--spacing-4) var(--spacing-5);
@@ -1586,18 +1587,29 @@ export default {
 }
 
 .btn {
-  padding: var(--spacing-3) var(--spacing-6);
+  padding: 0 24px;
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: var(--transition-base);
-  border: none;
+  border: 2px solid transparent;
   font-size: var(--font-size-base);
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  margin: 0;
 }
 
 .btn-primary {
   background: var(--color-primary);
   color: white;
+  border: 2px solid transparent;
 }
 
 .btn-primary:hover:not(:disabled) {

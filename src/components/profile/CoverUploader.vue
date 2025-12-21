@@ -384,6 +384,8 @@ export default {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
+  align-items: center;
+  align-content: center;
   margin-top: 2rem;
 }
 
@@ -396,6 +398,22 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  height: 44px;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  box-sizing: border-box;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.btn-primary span,
+.btn-secondary span {
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .btn-primary {

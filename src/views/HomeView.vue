@@ -186,36 +186,9 @@
                 Đến diễn đàn
               </router-link>
             </div>
-            <div class="community-questions">
-              <h3 class="questions-title">Câu hỏi gần đây</h3>
-              <div class="questions-list">
-                <article
-                  v-for="question in recentQuestions"
-                  :key="question.id"
-                  class="question-card"
-                  @click="goToQuestion(question)"
-                >
-                  <h4 class="question-title">{{ question.title }}</h4>
-                  <p class="question-preview">{{ question.preview }}</p>
-                  <div class="question-meta">
-                    <span class="question-author">{{ question.author }}</span>
-                    <span class="question-replies">{{ question.replies }} trả lời</span>
-                    <span class="question-time">{{ question.time }}</span>
-                  </div>
-                </article>
-              </div>
-            </div>
           </div>
         </div>
       </section>
-
-      <!-- Featured Instructors -->
-      <FeaturedInstructors
-        v-if="!showSearchResults && featuredInstructors.length > 0"
-        title="Giảng viên nổi bật"
-        :instructors="featuredInstructors"
-        @view-profile="handleViewProfile"
-      />
     </main>
 
     <!-- Preview Modal -->
@@ -239,7 +212,6 @@ import HeroSection from '@/components/HeroSection.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import CollectionCarousel from '@/components/CollectionCarousel.vue'
 import DocumentCard from '@/components/DocumentCard.vue'
-import FeaturedInstructors from '@/components/FeaturedInstructors.vue'
 import PreviewModal from '@/components/PreviewModal.vue'
 import ToastNotification from '@/components/ToastNotification.vue'
 import homepageData from '@/data/homepageData.json'
@@ -251,7 +223,6 @@ export default {
     SearchBar,
     CollectionCarousel,
     DocumentCard,
-    FeaturedInstructors,
     PreviewModal,
     ToastNotification
   },
@@ -269,8 +240,6 @@ export default {
     // Data from JSON
     const heroData = ref(homepageData.hero)
     const featuredCollections = ref(homepageData.featuredCollections)
-    const featuredInstructors = ref(homepageData.featuredInstructors)
-    const recentQuestions = ref(homepageData.communityQuestions)
 
     // Transform documents data
     const allDocuments = ref(homepageData.documents)
@@ -593,13 +562,6 @@ export default {
       console.log('Report document:', document.id)
     }
 
-    const handleViewProfile = (instructor) => {
-      router.push(`/instructor/${instructor.id}`)
-    }
-
-    const goToQuestion = (question) => {
-      router.push(`/diendan/question/${question.id}`)
-    }
 
     const loadMore = () => {
       // TODO: Implement pagination
@@ -629,7 +591,7 @@ export default {
       hasMoreResults.value = false
 
       // Set page title and meta
-      document.title = 'EduShare - Chia sẻ tài liệu học tập miễn phí'
+      document.title = 'Open Learn Foundation'
 
       // Fetch latest documents from API
       fetchLatestDocuments()
@@ -666,8 +628,6 @@ export default {
       hasMoreResults,
       heroData,
       featuredCollections,
-      featuredInstructors,
-      recentQuestions,
       recommendedCourses,
       latestDocuments,
       loadingLatestDocuments,
@@ -682,8 +642,6 @@ export default {
       handleDownload,
       handleSave,
       handleReport,
-      handleViewProfile,
-      goToQuestion,
       loadMore
     }
   }
@@ -937,17 +895,16 @@ export default {
 }
 
 .community-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: var(--spacing-12);
-  align-items: start;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
   z-index: 1;
 }
 
 .community-content { 
-  position: sticky; 
-  top: 120px; 
+  text-align: center;
+  max-width: 600px;
 }
 
 .community-description {
@@ -958,69 +915,6 @@ export default {
   color: rgba(255, 255, 255, 0.95);
 }
 
-.community-questions {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.questions-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  margin-bottom: var(--spacing-6);
-  color: #ffffff;
-  letter-spacing: -0.01em;
-}
-
-.questions-list { 
-  display: flex; 
-  flex-direction: column; 
-  gap: var(--spacing-4); 
-}
-
-.question-card {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-5);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-}
-
-.question-card:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateX(6px);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.question-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--spacing-2);
-  color: #ffffff;
-  line-height: var(--line-height-normal);
-}
-
-.question-preview {
-  font-size: var(--font-size-sm);
-  opacity: 0.9;
-  margin-bottom: var(--spacing-3);
-  line-height: var(--line-height-normal);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.question-meta {
-  display: flex;
-  gap: var(--spacing-4);
-  font-size: var(--font-size-xs);
-  opacity: 0.85;
-  flex-wrap: wrap;
-}
 
 .load-more { 
   text-align: center; 
@@ -1106,12 +1000,11 @@ export default {
   }
   
   .community-wrapper { 
-    grid-template-columns: 1fr; 
-    gap: var(--spacing-8); 
+    flex-direction: column;
   }
   
   .community-content { 
-    position: static; 
+    text-align: center;
   }
   
   .section-title {
@@ -1144,21 +1037,15 @@ export default {
     font-size: var(--font-size-2xl);
     margin-bottom: var(--spacing-6);
   }
-  
-  .community-questions {
-    padding: var(--spacing-6);
-  }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .question-card,
   .btn,
   .clear-search-btn { 
     transition: none; 
   }
   
-  .question-card:hover,
   .btn:hover,
   .clear-search-btn:hover { 
     transform: none; 

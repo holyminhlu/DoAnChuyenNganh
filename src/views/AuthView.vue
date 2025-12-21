@@ -326,7 +326,7 @@
     <footer class="auth-footer">
       <div class="container">
         <p class="footer-text">
-          © {{ currentYear }} EduShare. Tất cả quyền được bảo lưu.
+          © {{ currentYear }} Open Learn Foundation. Tất cả quyền được bảo lưu.
         </p>
         <div class="footer-links">
           <router-link to="/chinhsach" class="footer-link">Chính sách bảo mật</router-link>
