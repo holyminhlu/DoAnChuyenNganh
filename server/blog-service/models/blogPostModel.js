@@ -153,3 +153,4 @@ blogPostSchema.pre('save', function(next) {
 
 module.exports = mongoose.model('BlogPost', blogPostSchema)
 
+

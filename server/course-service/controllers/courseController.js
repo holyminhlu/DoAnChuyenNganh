@@ -155,9 +155,13 @@ exports.getAllCourses = async (req, res) => {
         console.log('Query:', req.query)
 
         // Build query
-        const query = {
-            status: status,
-            visibility: visibility
+        // Support admin view by allowing status=all and/or visibility=all
+        const query = {}
+        if (status && status !== 'all') {
+            query.status = status
+        }
+        if (visibility && visibility !== 'all') {
+            query.visibility = visibility
         }
 
         // Category filter
@@ -224,6 +228,8 @@ exports.getAllCourses = async (req, res) => {
             tags: course.tags,
             languages: course.languages,
             isBestSeller: course.isBestSeller,
+            status: course.status,
+            visibility: course.visibility,
             createdAt: course.createdAt
         }))
 
@@ -476,6 +482,258 @@ exports.getCourseById = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Đã có lỗi xảy ra khi lấy thông tin khóa học.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Delete course (soft delete)
+ * DELETE /courses/:id
+ *
+ * Note: This performs a soft-delete by setting:
+ * - status: 'archived'
+ * - visibility: 'private'
+ *
+ * This avoids destructive data loss while making the course disappear
+ * from default listings (which filter status=published & visibility=public).
+ */
+exports.deleteCourse = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        console.log('\n🗑️ ========== DELETE COURSE ==========' )
+        console.log('Course ID:', id)
+
+        let course = null
+
+        // Try MongoDB _id first (common for admin table)
+        if (id && /^[0-9a-fA-F]{24}$/.test(id)) {
+            try {
+                course = await Course.findById(id)
+                console.log('Found by MongoDB _id:', course ? 'Yes' : 'No')
+            } catch (error) {
+                console.log('Error finding by _id:', error.message)
+            }
+        }
+
+        // If not found by _id, try course_id
+        if (!course) {
+            course = await Course.findOne({ course_id: id })
+            console.log('Found by course_id:', course ? 'Yes' : 'No')
+        }
+
+        // Last resort: attempt ObjectId constructor
+        if (!course && mongoose.Types.ObjectId.isValid(id)) {
+            try {
+                course = await Course.findOne({ _id: new mongoose.Types.ObjectId(id) })
+                console.log('Found by ObjectId constructor:', course ? 'Yes' : 'No')
+            } catch (error) {
+                console.log('Error finding by ObjectId:', error.message)
+            }
+        }
+
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy khóa học'
+            })
+        }
+
+        // Soft delete
+        course.status = 'archived'
+        course.visibility = 'private'
+        await course.save()
+
+        console.log('✅ Course archived:', course.title)
+        console.log('Course _id:', course._id)
+        console.log('Course course_id:', course.course_id)
+        console.log('=====================================\n')
+
+        res.json({
+            success: true,
+            message: 'Đã xóa khóa học',
+            data: {
+                id: course._id.toString(),
+                course_id: course.course_id,
+                status: course.status,
+                visibility: course.visibility
+            }
+        })
+    } catch (error) {
+        console.error('❌ Delete course error:', error)
+        res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi xóa khóa học.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Restore a soft-deleted course
+ * PATCH /courses/:id/restore
+ *
+ * Restores to:
+ * - status: 'published'
+ * - visibility: 'public'
+ */
+exports.restoreCourse = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        console.log('\n♻️ ========== RESTORE COURSE ==========' )
+        console.log('Course ID:', id)
+
+        let course = null
+
+        if (id && /^[0-9a-fA-F]{24}$/.test(id)) {
+            try {
+                course = await Course.findById(id)
+                console.log('Found by MongoDB _id:', course ? 'Yes' : 'No')
+            } catch (error) {
+                console.log('Error finding by _id:', error.message)
+            }
+        }
+
+        if (!course) {
+            course = await Course.findOne({ course_id: id })
+            console.log('Found by course_id:', course ? 'Yes' : 'No')
+        }
+
+        if (!course && mongoose.Types.ObjectId.isValid(id)) {
+            try {
+                course = await Course.findOne({ _id: new mongoose.Types.ObjectId(id) })
+                console.log('Found by ObjectId constructor:', course ? 'Yes' : 'No')
+            } catch (error) {
+                console.log('Error finding by ObjectId:', error.message)
+            }
+        }
+
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy khóa học'
+            })
+        }
+
+        course.status = 'published'
+        course.visibility = 'public'
+        await course.save()
+
+        console.log('✅ Course restored:', course.title)
+        console.log('Course _id:', course._id)
+        console.log('Course course_id:', course.course_id)
+        console.log('======================================\n')
+
+        res.json({
+            success: true,
+            message: 'Đã khôi phục khóa học',
+            data: {
+                id: course._id.toString(),
+                course_id: course.course_id,
+                status: course.status,
+                visibility: course.visibility
+            }
+        })
+    } catch (error) {
+        console.error('❌ Restore course error:', error)
+        res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi khôi phục khóa học.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Permanently delete a course (destructive)
+ * DELETE /courses/:id/permanent?force=true
+ *
+ * This will delete:
+ * - Course document
+ * - Enrollments for that course_id
+ * - Payments for that course_id
+ */
+exports.deleteCoursePermanent = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { force } = req.query
+
+        console.log('\n💥 ========== PERMANENT DELETE COURSE ==========' )
+        console.log('Course ID:', id)
+        console.log('Force:', force)
+
+        if (force !== 'true') {
+            return res.status(400).json({
+                success: false,
+                message: 'Xóa vĩnh viễn là thao tác không thể hoàn tác. Thêm query ?force=true để xác nhận.'
+            })
+        }
+
+        let course = null
+
+        if (id && /^[0-9a-fA-F]{24}$/.test(id)) {
+            try {
+                course = await Course.findById(id)
+                console.log('Found by MongoDB _id:', course ? 'Yes' : 'No')
+            } catch (error) {
+                console.log('Error finding by _id:', error.message)
+            }
+        }
+
+        if (!course) {
+            course = await Course.findOne({ course_id: id })
+            console.log('Found by course_id:', course ? 'Yes' : 'No')
+        }
+
+        if (!course && mongoose.Types.ObjectId.isValid(id)) {
+            try {
+                course = await Course.findOne({ _id: new mongoose.Types.ObjectId(id) })
+                console.log('Found by ObjectId constructor:', course ? 'Yes' : 'No')
+            } catch (error) {
+                console.log('Error finding by ObjectId:', error.message)
+            }
+        }
+
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy khóa học'
+            })
+        }
+
+        const courseIdString = course.course_id
+
+        // Delete related documents by course_id (string)
+        const [enrollmentsResult, paymentsResult] = await Promise.all([
+            Enrollment.deleteMany({ course_id: courseIdString }),
+            Payment.deleteMany({ course_id: courseIdString })
+        ])
+
+        // Delete the course itself
+        await Course.deleteOne({ _id: course._id })
+
+        console.log('✅ Permanently deleted course:', course.title)
+        console.log('Deleted enrollments:', enrollmentsResult.deletedCount)
+        console.log('Deleted payments:', paymentsResult.deletedCount)
+        console.log('===============================================\n')
+
+        res.json({
+            success: true,
+            message: 'Đã xóa vĩnh viễn khóa học',
+            data: {
+                id: course._id.toString(),
+                course_id: courseIdString,
+                deletedEnrollments: enrollmentsResult.deletedCount,
+                deletedPayments: paymentsResult.deletedCount
+            }
+        })
+    } catch (error) {
+        console.error('❌ Permanent delete course error:', error)
+        res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi xóa vĩnh viễn khóa học.',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         })
     }

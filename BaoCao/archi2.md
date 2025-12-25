@@ -39,17 +39,17 @@
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      API GATEWAY LAYER                          │
-│                                                                   │
+│                                                                 │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │              API Gateway Service                        │   │
-│  │              (Express.js + Proxy Middleware)            │   │
+│  │              API Gateway Service                         │   │
+│  │              (Express.js + Proxy Middleware)             │   │
 │  │              Port: 3000                                  │   │
-│  │                                                           │   │
+│  │                                                          │   │
 │  │  Chức năng:                                              │   │
-│  │  ✓ Request Routing & Load Balancing                     │   │
+│  │  ✓ Request Routing & Load Balancing                      │   │
 │  │  ✓ CORS Handling                                         │   │
 │  │  ✓ Request/Response Logging                              │   │
-│  │  ✓ Error Handling & Transformation                      │   │
+│  │  ✓ Error Handling & Transformation                       │   │
 │  │  ✓ Protocol Translation                                  │   │
 │  └──────────────────────────────────────────────────────────┘   │
 └───┬───────────┬───────────┬───────────┬───────────┬─────────────┘
@@ -1066,4 +1066,5 @@ Docker & Docker Compose 3.8
 **Tài liệu được cập nhật lần cuối: 2024-01-15**
 
 **Ghi chú**: Kiến trúc này được thiết kế để đảm bảo tính mở rộng, bảo trì và hiệu suất cao. Các công nghệ được lựa chọn dựa trên yêu cầu của dự án và best practices của ngành.
+
 

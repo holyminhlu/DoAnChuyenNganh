@@ -144,3 +144,4 @@ grep -r "submitRating\|getRatings\|getUserRating" server/document-service/contro
    - Xóa rating endpoints từ documentation
    - Xóa rating routes nếu có
 
+

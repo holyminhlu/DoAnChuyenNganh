@@ -1267,3 +1267,4 @@ Match or No Match
 
 **Ghi chú**: Kiến trúc này được thiết kế để dễ dàng mở rộng và bảo trì. Các service có thể được thêm, sửa, hoặc xóa mà không ảnh hưởng đến các service khác.
 
+

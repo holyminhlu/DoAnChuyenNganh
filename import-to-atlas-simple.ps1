@@ -109,3 +109,4 @@ Write-Host "1. Đảm bảo Network Access trong MongoDB Atlas cho phép kết n
 Write-Host "2. Restart Docker services: docker-compose restart" -ForegroundColor Yellow
 Write-Host "3. Kiểm tra logs: docker-compose logs auth-service --tail 20" -ForegroundColor Yellow
 
+

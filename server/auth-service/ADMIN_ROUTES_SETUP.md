@@ -64,3 +64,4 @@ GET http://localhost:8080/api/auth/users
 - Hiện tại routes chưa có authentication middleware, cần thêm sau
 - Routes được mount tại root (`/`) trong auth service, nên URL đầy đủ là `/users`
 
+

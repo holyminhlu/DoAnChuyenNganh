@@ -96,3 +96,4 @@ async function deleteRatingsCollection() {
 // Run script
 deleteRatingsCollection();
 
+

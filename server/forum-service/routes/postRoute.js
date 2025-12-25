@@ -37,6 +37,8 @@ router.post('/upload-image', upload.single('image'), postController.uploadImage)
 
 // Routes
 router.get('/', postController.getAllPosts);
+router.patch('/:id/restore', postController.restorePost);
+router.delete('/:id/permanent', postController.deletePostPermanent);
 router.get('/:id', postController.getPostById);
 router.post('/', postController.createPost);
 router.put('/:id', postController.updatePost);

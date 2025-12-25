@@ -66,6 +66,15 @@ const postSchema = new mongoose.Schema({
     }
   }],
   comments: [commentSchema],
+  is_deleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -81,6 +90,7 @@ const postSchema = new mongoose.Schema({
 // Index for faster queries
 postSchema.index({ createdAt: -1 });
 postSchema.index({ 'author.userId': 1 });
+postSchema.index({ is_deleted: 1, createdAt: -1 });
 
 // Virtual for likes count
 postSchema.virtual('likesCount').get(function() {
@@ -99,6 +109,7 @@ postSchema.set('toObject', { virtuals: true });
 const Post = mongoose.model('Post', postSchema);
 
 module.exports = Post;
+
 
 
 

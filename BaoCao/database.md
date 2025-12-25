@@ -24,8 +24,8 @@ Hệ thống **OpenLearnFoundation** sử dụng:
 
 ```
 ┌─────────────────────────────────────────┐
-│         MongoDB Database                 │
-│  - Structured Data (JSON Documents)      │
+│         MongoDB Database                │
+│  - Structured Data (JSON Documents)     │
 │  - Metadata, User Info, Relationships   │
 └─────────────────────────────────────────┘
               ↓
@@ -1099,4 +1099,5 @@ db.TaiLieu.find({ title: "Đại số" }).explain("executionStats")
 **Tài liệu được cập nhật lần cuối: 2024-01-15**
 
 **Ghi chú**: Database và file storage được thiết kế để scale và maintain dễ dàng. Luôn backup dữ liệu trước khi thực hiện migration hoặc thay đổi lớn.
+
 

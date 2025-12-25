@@ -1,5 +1,28 @@
 const Post = require('../models/postModel');
 
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'eduShare_secret_key_2024';
+
+const getAuthUserFromRequest = (req) => {
+  const authHeader = req.headers?.authorization || req.headers?.Authorization;
+  if (!authHeader || typeof authHeader !== 'string') return null;
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') return null;
+  const token = parts[1];
+  if (!token) return null;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return {
+      user_id: decoded.user_id,
+      role: decoded.role,
+      userId: decoded.userId
+    };
+  } catch (e) {
+    return null;
+  }
+};
+
 // Get all posts (with pagination)
 exports.getAllPosts = async (req, res) => {
   try {
@@ -7,15 +30,21 @@ exports.getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const includeDeleted = String(req.query.includeDeleted || '').toLowerCase() === 'true';
 
     console.log(`Page: ${page}, Limit: ${limit}, Skip: ${skip}`);
 
-    const posts = await Post.find()
+    const query = {};
+    if (!includeDeleted) {
+      query.is_deleted = { $ne: true };
+    }
+
+    const posts = await Post.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Post.countDocuments();
+    const total = await Post.countDocuments(query);
 
     console.log(`✅ Found ${posts.length} posts (Total: ${total})`);
 
@@ -185,7 +214,9 @@ exports.updatePost = async (req, res) => {
 // Delete post
 exports.deletePost = async (req, res) => {
   try {
-    const userId = req.body.userId; // From auth middleware
+    const authUser = getAuthUserFromRequest(req);
+    const userIdFromClient = (req.body && req.body.userId) || req.query.userId || null;
+    const requesterId = (authUser && (authUser.user_id || authUser.userId)) ? (authUser.user_id || authUser.userId) : userIdFromClient;
 
     const post = await Post.findById(req.params.id);
 
@@ -196,25 +227,174 @@ exports.deletePost = async (req, res) => {
       });
     }
 
-    // Check if user is the author
-    if (post.author.userId !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Bạn không có quyền xóa bài viết này'
-      });
+    // Admin can delete any post
+    if (authUser && authUser.role === 'admin') {
+      // allowed
+    } else {
+      if (!requesterId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thiếu userId để xác thực quyền xóa bài viết'
+        });
+      }
+      if (post.author.userId !== requesterId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền xóa bài viết này'
+        });
+      }
     }
 
-    await Post.findByIdAndDelete(req.params.id);
+    // Soft delete
+    post.is_deleted = true;
+    post.deletedAt = new Date();
+    post.updatedAt = Date.now();
+    await post.save();
 
     res.json({
       success: true,
-      message: 'Xóa bài viết thành công'
+      message: 'Xóa bài viết (xóa mềm) thành công',
+      is_deleted: post.is_deleted
     });
   } catch (error) {
     console.error('Error deleting post:', error);
     res.status(500).json({
       success: false,
       message: 'Lỗi khi xóa bài viết',
+      error: error.message
+    });
+  }
+};
+
+// Restore soft-deleted post
+exports.restorePost = async (req, res) => {
+  try {
+    const authUser = getAuthUserFromRequest(req);
+    const userIdFromClient = (req.body && req.body.userId) || req.query.userId || null;
+    const requesterId = (authUser && (authUser.user_id || authUser.userId)) ? (authUser.user_id || authUser.userId) : userIdFromClient;
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy bài viết'
+      });
+    }
+
+    // Admin can restore any post
+    if (authUser && authUser.role === 'admin') {
+      // allowed
+    } else {
+      if (!requesterId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thiếu userId để xác thực quyền khôi phục bài viết'
+        });
+      }
+      if (post.author.userId !== requesterId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền khôi phục bài viết này'
+        });
+      }
+    }
+
+    post.is_deleted = false;
+    post.deletedAt = null;
+    post.updatedAt = Date.now();
+    await post.save();
+
+    return res.json({
+      success: true,
+      message: 'Khôi phục bài viết thành công',
+      is_deleted: post.is_deleted
+    });
+  } catch (error) {
+    console.error('Error restoring post:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi khôi phục bài viết',
+      error: error.message
+    });
+  }
+};
+
+// Permanently delete post (destructive)
+exports.deletePostPermanent = async (req, res) => {
+  try {
+    const force = String(req.query.force || '').toLowerCase() === 'true';
+    if (!force) {
+      return res.status(400).json({
+        success: false,
+        message: 'Thiếu xác nhận xóa vĩnh viễn. Thêm ?force=true để thực hiện.'
+      });
+    }
+
+    const authUser = getAuthUserFromRequest(req);
+    const userIdFromClient = (req.body && req.body.userId) || req.query.userId || null;
+    const requesterId = (authUser && (authUser.user_id || authUser.userId)) ? (authUser.user_id || authUser.userId) : userIdFromClient;
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy bài viết'
+      });
+    }
+
+    // Admin can delete any post
+    if (authUser && authUser.role === 'admin') {
+      // allowed
+    } else {
+      if (!requesterId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thiếu userId để xác thực quyền xóa bài viết'
+        });
+      }
+      if (post.author.userId !== requesterId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền xóa bài viết này'
+        });
+      }
+    }
+
+    // Best-effort delete local images if they are stored under /uploads/images
+    // We do not fail the request if file deletion fails.
+    try {
+      const path = require('path');
+      const fsp = require('fs/promises');
+      const images = Array.isArray(post.images) ? post.images : [];
+
+      for (const img of images) {
+        if (typeof img !== 'string') continue;
+        const match = img.match(/\/uploads\/images\/([^?#]+)/);
+        if (!match) continue;
+        const fileName = match[1];
+        const diskPath = path.join(__dirname, '..', 'uploads', 'images', fileName);
+        try {
+          await fsp.unlink(diskPath);
+        } catch (e) {
+          // ignore
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    await Post.findByIdAndDelete(req.params.id);
+
+    return res.json({
+      success: true,
+      message: 'Xóa vĩnh viễn bài viết thành công'
+    });
+  } catch (error) {
+    console.error('Error permanently deleting post:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi xóa vĩnh viễn bài viết',
       error: error.message
     });
   }

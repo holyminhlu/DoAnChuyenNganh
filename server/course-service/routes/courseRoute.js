@@ -4,7 +4,7 @@ const router = express.Router();
 console.log('\n📋 Loading course routes...');
 
 // Import controllers
-let getAllCourses, searchCourses, getCourseById, enrollCourse, getEnrollment, getMyEnrollments, createCourse, uploadCourseFilesMiddleware, updateProgress, getCourseStats;
+let getAllCourses, searchCourses, getCourseById, enrollCourse, getEnrollment, getMyEnrollments, createCourse, uploadCourseFilesMiddleware, updateProgress, getCourseStats, deleteCourse, restoreCourse, deleteCoursePermanent;
 
 try {
     const controllers = require('../controllers/courseController');
@@ -18,6 +18,9 @@ try {
     uploadCourseFilesMiddleware = controllers.uploadCourseFilesMiddleware;
     updateProgress = controllers.updateProgress;
     getCourseStats = controllers.getCourseStats;
+    deleteCourse = controllers.deleteCourse;
+    restoreCourse = controllers.restoreCourse;
+    deleteCoursePermanent = controllers.deleteCoursePermanent;
     console.log('✅ Controllers loaded successfully');
 } catch (error) {
     console.error('❌ Error loading controllers:', error);
@@ -109,6 +112,9 @@ router.get('/', logRoute('GET /courses'), asyncHandler(getAllCourses, 'GET /cour
 router.post('/:id/enroll', logRoute('POST /courses/:id/enroll'), asyncHandler(enrollCourse, 'POST /courses/:id/enroll'));
 router.get('/:id/enrollment', logRoute('GET /courses/:id/enrollment'), asyncHandler(getEnrollment, 'GET /courses/:id/enrollment'));
 router.put('/:id/progress', logRoute('PUT /courses/:id/progress'), asyncHandler(updateProgress, 'PUT /courses/:id/progress'));
+router.patch('/:id/restore', logRoute('PATCH /courses/:id/restore'), asyncHandler(restoreCourse, 'PATCH /courses/:id/restore'));
+router.delete('/:id/permanent', logRoute('DELETE /courses/:id/permanent'), asyncHandler(deleteCoursePermanent, 'DELETE /courses/:id/permanent'));
+router.delete('/:id', logRoute('DELETE /courses/:id'), asyncHandler(deleteCourse, 'DELETE /courses/:id'));
 // :id route must be last to avoid matching /search, /enroll, etc.
 router.get('/:id', logRoute('GET /courses/:id'), asyncHandler(getCourseById, 'GET /courses/:id'));
 

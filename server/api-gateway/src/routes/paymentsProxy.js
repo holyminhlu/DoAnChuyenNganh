@@ -1,9 +1,14 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+// Payments are implemented in course-service under /payments/*
+// IMPORTANT: inside Docker, `localhost` is the api-gateway container itself.
+// Use COURSE_SERVICE_URL (docker-compose sets it to http://course-service:3004).
+const COURSE_SERVICE_URL = process.env.COURSE_SERVICE_URL || 'http://localhost:3004';
+
 module.exports = createProxyMiddleware({
-  target: 'http://localhost:3004', // Course service port
+  target: COURSE_SERVICE_URL,
   changeOrigin: true,
-  // /api/payments/create -> router strip /api/payments -> /create -> prepend /payments -> /payments/create
+  // /api/payments/create -> /payments/create
   pathRewrite: {
     '^/(.*)': '/payments/$1'
   },

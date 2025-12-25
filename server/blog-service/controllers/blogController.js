@@ -1,5 +1,48 @@
 const BlogPost = require('../models/blogPostModel')
 
+const mongoose = require('mongoose')
+
+const jwt = require('jsonwebtoken')
+
+const JWT_SECRET = process.env.JWT_SECRET || 'eduShare_secret_key_2024'
+
+const getAuthUserFromRequest = (req) => {
+    const authHeader = req.headers?.authorization || req.headers?.Authorization
+    if (!authHeader || typeof authHeader !== 'string') return null
+    const parts = authHeader.split(' ')
+    if (parts.length !== 2 || parts[0] !== 'Bearer') return null
+    const token = parts[1]
+    if (!token) return null
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET)
+        return {
+            user_id: decoded.user_id,
+            userId: decoded.userId,
+            role: decoded.role
+        }
+    } catch (e) {
+        return null
+    }
+}
+
+const isAdminRequest = (req) => {
+    const authUser = getAuthUserFromRequest(req)
+    return Boolean(authUser && authUser.role === 'admin')
+}
+
+const buildPostIdentifierQuery = (id) => {
+    const orConditions = [
+        { blog_post_id: id },
+        { slug: id }
+    ]
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        orConditions.push({ _id: new mongoose.Types.ObjectId(id) })
+    }
+
+    return { $or: orConditions }
+}
+
 /**
  * Tạo bài viết mới (chỉ dành cho admin)
  */
@@ -172,7 +215,18 @@ exports.getAllPosts = async (req, res) => {
         } = req.query
 
         // Build query
-        const query = { status }
+        const query = {}
+
+        const adminRequest = isAdminRequest(req)
+
+        if (adminRequest) {
+            if (String(status).toLowerCase() !== 'all') {
+                query.status = status
+            }
+        } else {
+            // Non-admin can only see published posts
+            query.status = 'published'
+        }
 
         if (category) {
             query.category = category
@@ -233,13 +287,8 @@ exports.getPostById = async (req, res) => {
     try {
         const { id } = req.params
 
-        // Tìm theo blog_post_id hoặc slug
-        const post = await BlogPost.findOne({
-            $or: [
-                { blog_post_id: id },
-                { slug: id }
-            ]
-        })
+        // Tìm theo blog_post_id, slug hoặc Mongo _id
+        const post = await BlogPost.findOne(buildPostIdentifierQuery(id))
 
         if (!post) {
             return res.status(404).json({
@@ -249,8 +298,7 @@ exports.getPostById = async (req, res) => {
         }
 
         // Chỉ trả về bài viết đã published (trừ khi là admin)
-        if (post.status !== 'published') {
-            // TODO: Kiểm tra quyền admin
+        if (post.status !== 'published' && !isAdminRequest(req)) {
             return res.status(404).json({
                 success: false,
                 message: 'Bài viết không tồn tại hoặc đã bị ẩn'
@@ -341,12 +389,7 @@ exports.getRelatedPosts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 4
 
         // Lấy bài viết hiện tại
-        const currentPost = await BlogPost.findOne({
-            $or: [
-                { blog_post_id: id },
-                { slug: id }
-            ]
-        })
+        const currentPost = await BlogPost.findOne(buildPostIdentifierQuery(id))
 
         if (!currentPost) {
             return res.status(404).json({
@@ -449,12 +492,7 @@ exports.updatePost = async (req, res) => {
         }
 
         const post = await BlogPost.findOneAndUpdate(
-            {
-                $or: [
-                    { blog_post_id: id },
-                    { slug: id }
-                ]
-            },
+            buildPostIdentifierQuery(id),
             updateData,
             { new: true, runValidators: true }
         )
@@ -488,12 +526,19 @@ exports.deletePost = async (req, res) => {
     try {
         const { id } = req.params
 
-        const post = await BlogPost.findOneAndDelete({
-            $or: [
-                { blog_post_id: id },
-                { slug: id }
-            ]
-        })
+        if (!isAdminRequest(req)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Không có quyền thực hiện thao tác này'
+            })
+        }
+
+        // Soft delete => archive
+        const post = await BlogPost.findOneAndUpdate(
+            buildPostIdentifierQuery(id),
+            { status: 'archived' },
+            { new: true }
+        )
 
         if (!post) {
             return res.status(404).json({
@@ -504,13 +549,101 @@ exports.deletePost = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Xóa bài viết thành công'
+            message: 'Xóa bài viết (xóa mềm) thành công',
+            status: post.status
         })
     } catch (error) {
         console.error('Error deleting blog post:', error)
         res.status(500).json({
             success: false,
             message: 'Lỗi khi xóa bài viết',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Khôi phục bài viết đã xóa mềm (archived) (admin only)
+ */
+exports.restorePost = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        if (!isAdminRequest(req)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Không có quyền thực hiện thao tác này'
+            })
+        }
+
+        const post = await BlogPost.findOneAndUpdate(
+            buildPostIdentifierQuery(id),
+            { status: 'published' },
+            { new: true }
+        )
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy bài viết'
+            })
+        }
+
+        return res.json({
+            success: true,
+            message: 'Khôi phục bài viết thành công',
+            data: post
+        })
+    } catch (error) {
+        console.error('Error restoring blog post:', error)
+        return res.status(500).json({
+            success: false,
+            message: 'Lỗi khi khôi phục bài viết',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Xóa vĩnh viễn bài viết (destructive) (admin only)
+ */
+exports.deletePostPermanent = async (req, res) => {
+    try {
+        const force = String(req.query.force || '').toLowerCase() === 'true'
+        if (!force) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu xác nhận xóa vĩnh viễn. Thêm ?force=true để thực hiện.'
+            })
+        }
+
+        const { id } = req.params
+
+        if (!isAdminRequest(req)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Không có quyền thực hiện thao tác này'
+            })
+        }
+
+        const post = await BlogPost.findOneAndDelete(buildPostIdentifierQuery(id))
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy bài viết'
+            })
+        }
+
+        return res.json({
+            success: true,
+            message: 'Xóa vĩnh viễn bài viết thành công'
+        })
+    } catch (error) {
+        console.error('Error permanently deleting blog post:', error)
+        return res.status(500).json({
+            success: false,
+            message: 'Lỗi khi xóa vĩnh viễn bài viết',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         })
     }

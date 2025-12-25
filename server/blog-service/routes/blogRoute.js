@@ -11,7 +11,9 @@ const {
     getRelatedPosts,
     getAllTags,
     updatePost,
-    deletePost
+    deletePost,
+    restorePost,
+    deletePostPermanent
 } = require('../controllers/blogController');
 
 // Middleware để log route access
@@ -58,6 +60,12 @@ router.get('/:id/related', logRoute('GET /blogs/:id/related'), asyncHandler(getR
 // GET /blogs - Lấy danh sách bài viết (với pagination và filtering)
 router.get('/', logRoute('GET /blogs'), asyncHandler(getAllPosts, 'GET /blogs'));
 
+// PATCH /blogs/:id/restore - Khôi phục bài viết đã xóa mềm (admin only)
+router.patch('/:id/restore', logRoute('PATCH /blogs/:id/restore'), asyncHandler(restorePost, 'PATCH /blogs/:id/restore'));
+
+// DELETE /blogs/:id/permanent - Xóa vĩnh viễn bài viết (admin only)
+router.delete('/:id/permanent', logRoute('DELETE /blogs/:id/permanent'), asyncHandler(deletePostPermanent, 'DELETE /blogs/:id/permanent'));
+
 // GET /blogs/:id - Lấy bài viết theo ID hoặc slug
 router.get('/:id', logRoute('GET /blogs/:id'), asyncHandler(getPostById, 'GET /blogs/:id'));
 
@@ -71,4 +79,5 @@ router.put('/:id', logRoute('PUT /blogs/:id'), asyncHandler(updatePost, 'PUT /bl
 router.delete('/:id', logRoute('DELETE /blogs/:id'), asyncHandler(deletePost, 'DELETE /blogs/:id'));
 
 module.exports = router;
+
 

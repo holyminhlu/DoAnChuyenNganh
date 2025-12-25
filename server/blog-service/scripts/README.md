@@ -60,3 +60,4 @@ node scripts/create-blogposts-collection.js
 - Nếu collection đã tồn tại, script sẽ chỉ tạo/kiểm tra indexes
 - Script sẽ tạo một document test và xóa nó để đảm bảo collection hoạt động đúng
 
+

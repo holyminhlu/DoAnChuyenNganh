@@ -173,3 +173,4 @@ async function createBlogPostsCollection() {
 // Run script
 createBlogPostsCollection()
 
+

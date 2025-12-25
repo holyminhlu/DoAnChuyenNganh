@@ -3,7 +3,41 @@ const User = require('../models/userModel')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const fsp = require('fs/promises')
 const { v4: uuidv4 } = require('uuid')
+const mongoose = require('mongoose')
+const jwt = require('jsonwebtoken')
+
+const JWT_SECRET = process.env.JWT_SECRET || 'eduShare_secret_key_2024'
+
+const getAuthUserFromRequest = (req) => {
+    const authHeader = req.headers?.authorization || req.headers?.Authorization
+    if (!authHeader || typeof authHeader !== 'string') return null
+    const parts = authHeader.split(' ')
+    if (parts.length !== 2 || parts[0] !== 'Bearer') return null
+    const token = parts[1]
+    if (!token) return null
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET)
+        return {
+            user_id: decoded.user_id,
+            role: decoded.role,
+            userId: decoded.userId
+        }
+    } catch (e) {
+        return null
+    }
+}
+
+const buildDocumentIdQuery = (id) => {
+    // document_id is a string like 'doc_...'
+    // _id is a Mongo ObjectId (24-hex). Querying {_id: 'doc_...'} throws CastError.
+    const or = [{ document_id: id }]
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        or.unshift({ _id: id })
+    }
+    return { $or: or }
+}
 
 // Đảm bảo thư mục uploads tồn tại
 const uploadsDir = path.join(__dirname, '../uploads')
@@ -120,13 +154,8 @@ const uploadFiles = multer({
 exports.uploadDocument = async (req, res) => {
     console.log('\n🔵 ========== UPLOAD DOCUMENT CALLED ==========')
     console.log('Request received at:', new Date().toISOString())
-    console.log('Request headers:', {
-        'content-type': req.headers['content-type'],
-        'content-length': req.headers['content-length']
-    })
 
     try {
-        // Upload files
         uploadFiles(req, res, async (err) => {
             if (err) {
                 console.error('❌ Multer error:', err)
@@ -589,12 +618,31 @@ exports.getAllDocuments = async (req, res) => {
         const {
             limit = 20,
             page = 1,
-            sortBy = 'newest'
+            sortBy = 'newest',
+            status,
+            visibility,
+            search
         } = req.query
 
-        const query = {
-            status: 'published',
-            visibility: 'public'
+        const query = {}
+
+        // Default behavior for public listing: only published + public
+        // Admin can request all with status=all&visibility=all
+        if (typeof status === 'string' && status.trim()) {
+            if (status !== 'all') query.status = status
+        } else {
+            query.status = 'published'
+        }
+
+        if (typeof visibility === 'string' && visibility.trim()) {
+            if (visibility !== 'all') query.visibility = visibility
+        } else {
+            query.visibility = 'public'
+        }
+
+        if (typeof search === 'string' && search.trim()) {
+            // Use text index if available
+            query.$text = { $search: search.trim() }
         }
 
         // Build sort
@@ -641,6 +689,9 @@ exports.getAllDocuments = async (req, res) => {
                 document_id: doc.document_id,
                 title: doc.title,
                 description: doc.description,
+                status: doc.status,
+                visibility: doc.visibility,
+                uploaderId: doc.uploaderId,
                 thumbnail: doc.thumbnail ? doc.thumbnail.filePath : null,
                 file: doc.file ? {
                     originalName: doc.file.originalName || 'Unknown',
@@ -702,12 +753,7 @@ exports.getDocumentById = async (req, res) => {
             })
         }
 
-        let document = await Document.findOne({
-            $or: [
-                { _id: id },
-                { document_id: id }
-            ]
-        })
+        let document = await Document.findOne(buildDocumentIdQuery(id))
 
         if (!document) {
             return res.status(404).json({
@@ -931,6 +977,294 @@ exports.getUserBookmarks = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Đã có lỗi xảy ra khi lấy danh sách đã lưu.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Update document (limited fields)
+ * PATCH /documents/:id
+ * Allowed: title, description, program, courseCode, year, languages, visibility
+ * Requires uploaderId in body for basic ownership check.
+ */
+exports.updateDocument = async (req, res) => {
+    try {
+        const { id } = req.params
+        const requesterId = (req.body && req.body.uploaderId) ? req.body.uploaderId : null
+
+        if (!requesterId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu uploaderId để xác thực quyền sửa tài liệu'
+            })
+        }
+
+        const document = await Document.findOne(buildDocumentIdQuery(id))
+
+        if (!document) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy tài liệu'
+            })
+        }
+
+        if (!requesterId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu uploaderId để xác thực quyền sửa tài liệu'
+            })
+        }
+
+        // Admin can update any document
+        if (authUser && authUser.role === 'admin') {
+            // allowed
+        } else if (document.uploaderId !== requesterId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền sửa tài liệu này'
+            })
+        }
+
+        const allowedFields = ['title', 'description', 'program', 'courseCode', 'year', 'languages', 'visibility']
+        for (const field of allowedFields) {
+            if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+                document[field] = req.body[field]
+            }
+        }
+
+        // Normalize languages
+        if (document.languages && !Array.isArray(document.languages)) {
+            document.languages = [document.languages]
+        }
+        if (!document.languages || document.languages.length === 0) {
+            document.languages = ['vi']
+        }
+
+        await document.save()
+
+        return res.json({
+            success: true,
+            message: 'Cập nhật tài liệu thành công',
+            data: {
+                id: document._id,
+                document_id: document.document_id,
+                title: document.title,
+                description: document.description,
+                program: document.program,
+                courseCode: document.courseCode,
+                year: document.year,
+                languages: document.languages,
+                visibility: document.visibility,
+                status: document.status,
+                updatedAt: document.updatedAt
+            }
+        })
+    } catch (error) {
+        console.error('❌ Update document error:', error)
+        return res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi cập nhật tài liệu.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Delete document
+ * DELETE /documents/:id
+ * Requires uploaderId in query or body for basic ownership check.
+ */
+exports.deleteDocument = async (req, res) => {
+    try {
+        const { id } = req.params
+        const authUser = getAuthUserFromRequest(req)
+        const requesterIdFromClient = req.query.uploaderId || (req.body && req.body.uploaderId) || null
+        const requesterId = (authUser && authUser.user_id) ? authUser.user_id : requesterIdFromClient
+
+        const document = await Document.findOne(buildDocumentIdQuery(id))
+
+        if (!document) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy tài liệu'
+            })
+        }
+
+        // If no auth token and no uploaderId provided, keep previous behavior (400)
+        if (!requesterId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu uploaderId để xác thực quyền xóa tài liệu'
+            })
+        }
+
+        // Admin can delete any document
+        if (authUser && authUser.role === 'admin') {
+            // allowed
+        } else if (document.uploaderId !== requesterId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền xóa tài liệu này'
+            })
+        }
+
+        // Soft delete: keep DB record + files, but hide from public lists
+        document.status = 'archived'
+        document.visibility = 'private'
+        await document.save()
+
+        return res.json({
+            success: true,
+            message: 'Xóa tài liệu (xóa mềm) thành công',
+            status: document.status,
+            visibility: document.visibility
+        })
+    } catch (error) {
+        console.error('❌ Delete document error:', error)
+        return res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi xóa tài liệu.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Restore soft-deleted document
+ * PATCH /documents/:id/restore
+ * Requires admin token or uploaderId in query/body.
+ */
+exports.restoreDocument = async (req, res) => {
+    try {
+        const { id } = req.params
+        const authUser = getAuthUserFromRequest(req)
+        const requesterIdFromClient = req.query.uploaderId || (req.body && req.body.uploaderId) || null
+        const requesterId = (authUser && authUser.user_id) ? authUser.user_id : requesterIdFromClient
+
+        const document = await Document.findOne(buildDocumentIdQuery(id))
+        if (!document) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy tài liệu'
+            })
+        }
+
+        if (!requesterId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu uploaderId để xác thực quyền khôi phục tài liệu'
+            })
+        }
+
+        if (authUser && authUser.role === 'admin') {
+            // allowed
+        } else if (document.uploaderId !== requesterId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền khôi phục tài liệu này'
+            })
+        }
+
+        document.status = 'published'
+        document.visibility = 'public'
+        await document.save()
+
+        return res.json({
+            success: true,
+            message: 'Khôi phục tài liệu thành công',
+            status: document.status,
+            visibility: document.visibility
+        })
+    } catch (error) {
+        console.error('❌ Restore document error:', error)
+        return res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi khôi phục tài liệu.',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        })
+    }
+}
+
+/**
+ * Permanently delete a document (destructive)
+ * DELETE /documents/:id/permanent?force=true
+ * Requires admin token or uploaderId in query/body.
+ */
+exports.deleteDocumentPermanent = async (req, res) => {
+    try {
+        const { id } = req.params
+        const force = String(req.query.force || '').toLowerCase() === 'true'
+        if (!force) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu xác nhận xóa vĩnh viễn. Thêm ?force=true để thực hiện.'
+            })
+        }
+
+        const authUser = getAuthUserFromRequest(req)
+        const requesterIdFromClient = req.query.uploaderId || (req.body && req.body.uploaderId) || null
+        const requesterId = (authUser && authUser.user_id) ? authUser.user_id : requesterIdFromClient
+
+        const document = await Document.findOne(buildDocumentIdQuery(id))
+        if (!document) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy tài liệu'
+            })
+        }
+
+        if (!requesterId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Thiếu uploaderId để xác thực quyền xóa tài liệu'
+            })
+        }
+
+        if (authUser && authUser.role === 'admin') {
+            // allowed
+        } else if (document.uploaderId !== requesterId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền xóa tài liệu này'
+            })
+        }
+
+        // Delete files on disk (best-effort)
+        const filePaths = []
+        if (document.file && document.file.filePath) filePaths.push(document.file.filePath)
+        if (document.thumbnail && document.thumbnail.filePath) filePaths.push(document.thumbnail.filePath)
+
+        for (const p of filePaths) {
+            try {
+                const diskPath = path.join(__dirname, '..', p.replace(/^\//, ''))
+                await fsp.unlink(diskPath)
+            } catch (e) {
+                // Ignore missing files or permissions
+            }
+        }
+
+        await Document.deleteOne({ _id: document._id })
+
+        // Clean bookmarks references (best-effort)
+        try {
+            await User.updateMany(
+                { saved_documents: { $in: [document.document_id, document._id.toString()] } },
+                { $pull: { saved_documents: { $in: [document.document_id, document._id.toString()] } } }
+            )
+        } catch (e) {
+            // Ignore
+        }
+
+        return res.json({
+            success: true,
+            message: 'Xóa vĩnh viễn tài liệu thành công'
+        })
+    } catch (error) {
+        console.error('❌ Permanently delete document error:', error)
+        return res.status(500).json({
+            success: false,
+            message: 'Đã có lỗi xảy ra khi xóa vĩnh viễn tài liệu.',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         })
     }

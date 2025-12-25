@@ -20,3 +20,4 @@ EXPOSE 3005
 # Start the service
 CMD ["npm", "start"]
 
+

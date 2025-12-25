@@ -4,7 +4,7 @@ const router = express.Router();
 console.log('\n📋 Loading document routes...');
 
 // Import controllers
-let uploadDocument, searchDocuments, getAllDocuments, getDocumentById, getUserBookmarks, addBookmark, removeBookmark, incrementViews, incrementDownloads;
+let uploadDocument, searchDocuments, getAllDocuments, getDocumentById, getUserBookmarks, addBookmark, removeBookmark, incrementViews, incrementDownloads, updateDocument, deleteDocument, restoreDocument, deleteDocumentPermanent;
 
 console.log('🔍 Checking route handlers...');
 
@@ -19,6 +19,10 @@ try {
     removeBookmark = controllers.removeBookmark;
     incrementViews = controllers.incrementViews;
     incrementDownloads = controllers.incrementDownloads;
+    updateDocument = controllers.updateDocument;
+    deleteDocument = controllers.deleteDocument;
+    restoreDocument = controllers.restoreDocument;
+    deleteDocumentPermanent = controllers.deleteDocumentPermanent;
     console.log('✅ Controllers loaded successfully');
     console.log('   - incrementViews:', typeof incrementViews);
     console.log('   - incrementDownloads:', typeof incrementDownloads);
@@ -90,6 +94,18 @@ router.post('/:id/view', logRoute('POST /documents/:id/view'), asyncHandler(incr
 console.log('   ✅ Registered: POST /:id/view');
 router.post('/:id/download', logRoute('POST /documents/:id/download'), asyncHandler(incrementDownloads, 'POST /documents/:id/download'));
 console.log('   ✅ Registered: POST /:id/download');
+
+// Update/Delete document (owner only)
+router.patch('/:id/restore', logRoute('PATCH /documents/:id/restore'), asyncHandler(restoreDocument, 'PATCH /documents/:id/restore'));
+console.log('   ✅ Registered: PATCH /:id/restore');
+
+router.delete('/:id/permanent', logRoute('DELETE /documents/:id/permanent'), asyncHandler(deleteDocumentPermanent, 'DELETE /documents/:id/permanent'));
+console.log('   ✅ Registered: DELETE /:id/permanent');
+
+router.patch('/:id', logRoute('PATCH /documents/:id'), asyncHandler(updateDocument, 'PATCH /documents/:id'));
+console.log('   ✅ Registered: PATCH /:id');
+router.delete('/:id', logRoute('DELETE /documents/:id'), asyncHandler(deleteDocument, 'DELETE /documents/:id'));
+console.log('   ✅ Registered: DELETE /:id');
 
 // 4. Generic :id route LAST (must be last to avoid matching specific routes above)
 router.get('/:id', logRoute('GET /documents/:id'), asyncHandler(getDocumentById, 'GET /documents/:id'));

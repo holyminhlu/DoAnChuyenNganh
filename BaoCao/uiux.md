@@ -1674,3 +1674,4 @@ const UploadModal = () => import('../components/UploadModal.vue');
 
 **Ghi chú**: Design system này được thiết kế để đảm bảo tính nhất quán, khả năng truy cập và trải nghiệm người dùng tốt nhất trên tất cả các thiết bị và trình duyệt.
 
+
